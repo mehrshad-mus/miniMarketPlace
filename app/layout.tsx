@@ -1,16 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Vazirmatn , Roboto , Playpen_Sans_Arabic} from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+  const geistSans = Geist({
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
+  });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const playpen = Playpen_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-playpen",
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+});
+
+const vazir = Vazirmatn({
+  subsets: ["arabic"],
+  variable: "--font-vazir",
+});
+
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,11 +41,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fa">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${playpen.variable} antialiased`}
       >
-        {children}
+        <main>
+          <Providers>
+            {children}
+          </Providers>
+        </main>
       </body>
     </html>
   );

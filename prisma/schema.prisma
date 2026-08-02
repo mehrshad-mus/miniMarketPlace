@@ -1,0 +1,627 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  code      String
+  expiresAt DateTime
+  phone     String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//User
+model User {
+  id           String    @id @default(uuid())
+  name         String?
+  phone        String    @unique
+  userName     String?
+  nationalCode String?   @unique
+  avatar       String?
+  password     String?
+  email        String?
+  telegram     String?
+  inestagram   String?
+  biography    String?
+  birthday     DateTime?
+  location     String?
+  gender       Gender    @default(MALE)
+  status       Status    @default(ACTIVE)
+  role         Role
+
+  wallet         Wallet?
+  cart           Cart?
+  seller         Seller?
+  sellerRequests SellerRequest?
+  order          Order[]
+  addresses      UserAddress[]
+  tickets        Ticket[]
+  favorites      Favorite[]
+  comments       Comment[]
+  recentViews    RecentView[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Seller {
+  id           String @id @default(uuid())
+  name         String
+  nationalCode String
+  storeName    String
+  phone        String 
+  location   String @default("shiraz")
+
+  offers          Offer[]
+  articles        Article[]
+  shippingMethode ShippingMethod[]
+  productRequest  ProductRequest[]
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SellerRequest {
+  id           String @id @default(uuid())
+  name         String
+  phone        String @unique
+  location     String
+  nationalCode String
+  storeName    String
+
+  status      RequestStatus @default(PENDING)
+  isAdminSeen AdminState    @default(DOSENTSEEN)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// request for adding new product by seller
+model ProductRequest {
+  id               String        @id @default(uuid())
+  title            String
+  englishTitle     String?
+  tag              String?
+  warningAndDetail String?
+  seoTitle         String?
+  seoExplanation   String?
+  seoWord          String?
+  description      String?
+  status           RequestStatus @default(PENDING)
+  slug             String?       @unique
+
+  isAdminSeen AdminState @default(DOSENTSEEN)
+
+  specialProduct Boolean @default(false)
+  showComment    Boolean @default(true)
+  showView       Boolean @default(false)
+
+  images ProductRequestImage[]
+
+  options Json?
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  brandId String
+  brand   Brand  @relation(fields: [brandId], references: [id])
+
+  sellerId String
+  seller   Seller @relation(fields: [sellerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductRequestImage {
+  id      String  @id @default(uuid())
+  url     String
+  altText String?
+
+  productRequestId String
+  productRequest   ProductRequest @relation(fields: [productRequestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingMethod {
+  id              String  @id @default(uuid())
+  name            String
+  compony         String?
+  description     String
+  extraPricePerKg Int?
+  basePrice       Int
+  maxWeightKg     Float
+  deleveryTime    String
+  status          Status
+
+  sellerId String
+  seller   Seller @relation(fields: [sellerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//dosent complite (category)
+model Article {
+  id          String  @id @default(uuid())
+  titel       String
+  readingTime Int
+  content     String
+  slug        String?
+  source      String
+
+  status RequestStatus?
+
+  sellerId String
+  seller   Seller @relation(fields: [sellerId], references: [id])
+
+  brandId String
+  brand   Brand  @relation(fields: [brandId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//User-Wallet
+model Wallet {
+  id    String @id @default(uuid())
+  asset Int
+
+  bankaccount BankAccount[]
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model BankAccount {
+  id         String @id @default(uuid())
+  name       String
+  cartNumber String
+  iban       String
+
+  walletId String
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserAddress {
+  id                String @id @default(uuid())
+  receiverFirstName String
+  receverLastName   String
+  province          String
+  city              String
+  receverNumber     String
+  postalCode        String
+  address           String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id          String @unique @default(uuid())
+  title       String
+  description String
+  preference  String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//relative to product and user
+model RecentView {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  viewedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Favorite {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Comment {
+  id             String  @id @default(uuid())
+  content        String
+  rate           Int
+  weacness       String?
+  Strength       String?
+  recommendation Boolean
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
+
+//not complieted
+model Cart {
+  id          String  @id @default(uuid())
+  name        String?
+  description String?
+
+  cartItem CartItem[]
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  quentity Int
+
+  offerId String
+  offer   Offer  @relation(fields: [offerId], references: [id])
+
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId])
+  @@index([offerId])
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  totalPrice    Int
+  shippingPrice Int
+  finalPrice    Int
+  status        OrderStatus
+
+  orderItem OrderItem[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id              String @id @default(uuid())
+  quentity        Int
+  priceAtPurchase Int
+
+  offerId String
+  offer   Offer  @relation(fields: [offerId], references: [id])
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([offerId])
+}
+
+model Brand {
+  id   String  @id @default(uuid())
+  name String
+  url  String
+  icon String?
+
+  article         Article[]
+  productRequests ProductRequest[]
+  productes       Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// dosent complite (shipping method)
+model DefaultShippingMethod {
+  id           String @id @default(uuid())
+  name         String
+  compony      String
+  description  String
+  basePrice    Int
+  maxWeightKg  Float?
+  deleveryTime String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//related to product and product option
+model Category {
+  id   String @id @default(uuid())
+  name String
+
+  productes       Product[]
+  productRequests ProductRequest[]
+  articles        Article[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id               String  @id @default(uuid())
+  title            String
+  englishTitle     String?
+  tag              String?
+  warningAndDetail String?
+  seoTitle         String?
+  seoExplanation   String?
+  seoWord          String?
+  status           Status?
+  slug             String? @unique
+  soldCount        Int     @default(0)
+
+  specialProduct Boolean @default(false)
+  showComment    Boolean @default(true)
+  showView       Boolean @default(false)
+
+  productImage   ProductImage[]
+  // favorite       Favorite[]
+  comment        Comment[]
+  viewBy         RecentView[]
+  productOption  ProductOption[]
+  productVariant ProductVariant[]
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  brandId String
+  brand   Brand  @relation(fields: [brandId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  favorites Favorite[]
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([createdAt])
+}
+
+model ProductVariant {
+  id  String  @id @default(uuid())
+  sku String? @unique
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  offer        Offer[]
+  variantValue VariantValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+//dosent complite
+model Offer {
+  id String @id @default(uuid())
+
+  price    Int
+  stock    Int
+  discount Int
+  status   Status? @default(ACTIVE)
+
+  cartItem  CartItem[]
+  orderItem OrderItem[]
+
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+
+  sellerId String
+  seller   Seller @relation(fields: [sellerId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([sellerId, productVariantId])
+  @@index([productVariantId])
+  @@index([sellerId])
+  @@index([price])
+  @@index([stock])
+  @@index([productVariantId, price])
+}
+
+model ProductOption {
+  id   String @id @default(uuid())
+  name String
+
+  productOptionValues ProductOptionValue[]
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model ProductOptionValue {
+  id    String @id @default(uuid())
+  value String
+
+  variantValue VariantValue[]
+
+  productOptionId String
+  productOption   ProductOption @relation(fields: [productOptionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productOptionId])
+}
+
+model VariantValue {
+  id String @id @default(uuid())
+
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+
+  productOptionValueId String
+  productOptionValue   ProductOptionValue @relation(fields: [productOptionValueId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productVariantId, productOptionValueId])
+  @@index([productVariantId])
+  @@index([productOptionValueId])
+}
+
+model CreatedOption {
+  id   String @id @default(uuid())
+  name String
+
+  createdOptionValue CreatedOptionValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CreatedOptionValue {
+  id    String @id @default(uuid())
+  value String
+
+  createdOption   CreatedOption @relation(fields: [createdOptionId], references: [id])
+  createdOptionId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductImage {
+  id      String  @id @default(uuid())
+  url     String
+  altText String?
+
+  productId String
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommenQuestion {
+  id       String @id @default(uuid())
+  question String
+  answer   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Story {
+  id       String @id @default(uuid())
+  title    String
+  content  String
+  imageUrl String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AdminState {
+  DOSENTSEEN
+  SEEN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum Role {
+  USER
+  SELLER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
