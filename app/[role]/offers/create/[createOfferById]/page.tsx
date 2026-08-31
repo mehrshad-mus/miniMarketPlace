@@ -21,7 +21,8 @@ const CreateOffer = async({
         )
     }
 
-    return <OfferSection mode="create" mutaionKey={["createOffer"]} invalidations={["offer", "productt"]} title="ایجاد پیشنهاد" productId={productId} buttonTitle="ایجاد پیشنهاد"/>
+
+    return <OfferSection mode="create" mutaionKey={["createOffer"]} invalidations={["offer"]} title="ایجاد پیشنهاد" productId={productId} buttonTitle="ایجاد پیشنهاد"/>
    
     
 }

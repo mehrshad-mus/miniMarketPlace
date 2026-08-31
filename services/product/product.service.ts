@@ -1,3 +1,4 @@
+import { ProductGetPayload } from "@/app/generated/prisma/internal/prismaNamespaceBrowser"
 import { getCurrentUser } from "@/lib/auth"
 import { accessRole } from "@/lib/constant/enums"
 import { prisma } from "@/lib/prisma"
@@ -11,7 +12,7 @@ import { randomUUID } from "crypto"
 export async function getAllProduct({ currentPage, productId, offers }: { currentPage: string | null, productId: string | null, offers?: string | null }) {
     const user = await getCurrentUser()
 
-    if (!user || user.userRole === "USER" ) {
+    if (!user || user.userRole === "USER") {
         throw new Error("you havnt access!")
     }
 
@@ -33,7 +34,11 @@ export async function getAllProduct({ currentPage, productId, offers }: { curren
                 },
                 productVariant: {
                     include: {
-                        offer: true,
+                        offer: {
+                            include: {
+                                seller: true
+                            }
+                        },
                         variantValue: {
                             include: {
                                 productOptionValue: {
@@ -145,7 +150,7 @@ export async function getAllProduct({ currentPage, productId, offers }: { curren
             },
             productVariant: {
                 include: {
-                    offer : true,
+                    offer: true,
                     variantValue: true
                 }
             }
@@ -178,6 +183,66 @@ export async function getAllProduct({ currentPage, productId, offers }: { curren
 
 
     return { products: productWithImage, totalCount: Math.ceil(totalCount / 5) }
+}
+
+export async function getProductByIdForUser({ productId }: { productId: string }) {
+
+    const productById = await prisma.product.findUnique({
+        where: { id: productId },
+        include: {
+            brand: true,
+            category: true,
+            productImage: true,
+
+            productOption: {
+                include: {
+                    productOptionValues: true,
+                },
+            },
+
+            productVariant: {
+                include: {
+                    variantValue:{
+                        include: {
+                            productOptionValue : {
+                                include: {
+                                    productOption : true
+                                }
+                            }
+                        }
+                    },
+                    offer: {
+                        include: {
+                            seller: true
+                        }
+                    }
+                }
+            }
+        }
+
+    })
+
+    if (!productById) throw new Error("dosent exist form database")
+
+    const productWithImage = {
+        ...productById,
+        productImage: await Promise.all(
+            productById.productImage.map(async (img) => ({
+                ...img,
+                url: await getSignedUrl(
+                    s3,
+                    new GetObjectCommand({
+                        Bucket: process.env.S3_BUCKET_NAME!,
+                        Key: img.url,
+                    }),
+                    { expiresIn: 3600 }
+                ),
+            }))
+        ),
+    }
+
+    return { product: productWithImage }
+
 }
 
 export async function createProduct(data: FormFields) {
@@ -608,7 +673,7 @@ export async function deleteProduct({ id }: { id: string }) {
     const deleteProduct = await prisma.product.delete({
         where: { id }
     })
-    
+
     return deleteProduct
 
 }

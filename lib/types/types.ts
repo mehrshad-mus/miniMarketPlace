@@ -1,5 +1,76 @@
-import { ProductGetPayload, ProductRequestGetPayload } from "@/app/generated/prisma/models"
+import { CartGetPayload, CartItemGetPayload, OfferGetPayload, ProductGetPayload, ProductRequestGetPayload } from "@/app/generated/prisma/models"
 import { JSX, JSXElementConstructor } from "react"
+
+export type cartType = CartGetPayload<{
+    include: {
+        cartItem: {
+            include: {
+                offer: {
+                    include: {
+                        seller: true,
+                        productVariant: {
+                            include: {
+                                variantValue: {
+                                    include: {
+                                        productOptionValue: {
+                                            include: {
+                                                productOption: true
+                                            }
+                                        }
+                                    }
+                                },
+                                product: {
+                                    include: {
+                                        productImage: true
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+}>
+
+type CartItemPayload = CartItemGetPayload<{
+    include: {
+        offer: {
+            include: {
+                seller: true,
+                productVariant: {
+                    include: {
+                        variantValue: {
+                            include: {
+                                productOptionValue: {
+                                    include: {
+                                        productOption: true
+                                    }
+                                }
+                            }
+                        },
+                        product: {
+                            include: {
+                                productImage: true
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+}>
+export type cartItemType = Omit<CartItemPayload , "price"> & {
+    price: number;
+}
+
+export type offerType = OfferGetPayload<{
+    include: {
+        seller: true
+    }
+}>
 
 export type productWithBrandAndCategory = ProductGetPayload<{
     include: {

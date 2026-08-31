@@ -27,11 +27,13 @@ export type dialogProps = {
     id?: string,
     value?: string | { r: number, g: number, b: number, a: number },
     secoundValue?: string
+    file? : File[]
 }
 
 export type categoryType = {
     id: string,
     name: string
+    iconUrl : string
 }
 
 //related to product

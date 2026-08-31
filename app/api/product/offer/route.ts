@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
         const currentPage = searchParams.get("currentPage")
         const productId = searchParams.get("productId")
 
-        const { offers: productOfferWithImage, totalCount } = await getAllOffer(
+        const { productWithOffers: productOfferWithImage, totalCount } = await getAllOffer(
             {
                 sellerId: sellerId ,
                 productId: productId,

@@ -1,19 +1,21 @@
 "use client"
 
+import Image from "next/image"
 import { forwardRef, useState } from "react"
 import { Button } from "../ui/button"
 import Spinner from "./Spinner "
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import Sketch from "@uiw/react-color-sketch"
-import { NextRouter } from "next/router"
+
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { toast } from "sonner"
+import { dialogProps } from "@/lib/zodSchema/schema"
 
 export type OptionDialogProps = {
     title: string,
     id?: string,
     mutationKey: string[],
-    mutateFn: ({ id, value, secoundValue }: { id?: string, value?: string | { r: number, g: number, b: number, a: number }, secoundValue?: string }) => Promise<{ message: string }>,
+    mutateFn: ({ id, value, secoundValue ,file }: dialogProps) => Promise<{ message: string }>,
     invalidations?: string[],
     router?: {
         fn: AppRouterInstance,
@@ -44,7 +46,7 @@ export const OptionDialog = forwardRef<HTMLDialogElement, OptionDialogProps>(
 
                     if (props.router.type === "push") {
                         console.log(props.router.url)
-                        props.router.fn.push(props.router.url ? props.router.url :"/" )
+                        props.router.fn.push(props.router.url ? props.router.url : "/")
                     }
                     if (props.router.type === "refresh") {
                         props.router.fn.refresh()
@@ -65,6 +67,7 @@ export const OptionDialog = forwardRef<HTMLDialogElement, OptionDialogProps>(
             },
             onError: (error) => console.log(error.message)
         })
+        
 
         //change Status
         const status = props.title === "ACTIVE" ? true : props.title === "INACTIVE" ? false : null
@@ -79,19 +82,37 @@ export const OptionDialog = forwardRef<HTMLDialogElement, OptionDialogProps>(
         };
         const [disableAlpha, setDisableAlpha] = useState(false);
 
+        //file
+        const choseFile = props.title.includes("دسته بندی")
+
+        const [images, setImages] = useState<string[]>()
+        const [imageFile , setImageFile] = useState<File[]>()
+
+        function imgHandler(e: React.ChangeEvent<HTMLInputElement>) {
+
+            const files = Array.from(e.target.files ?? []);
+
+            setImageFile(files)
+            const urls = files.map((file) =>
+                URL.createObjectURL(file)
+            );
+            
+            setImages(urls)
+        }
+
         return (
-            <dialog ref={ref} className={`bg-white rounded-2xl ${colorSpecific ? "top-20" : "top-45 "} left-120 w-120`}>
+            <dialog ref={ref} className={`bg-white rounded-2xl ${colorSpecific || choseFile? "top-20" : "top-45 "} left-120 w-120 px-6`}>
                 <div className="flex justify-between items-center p-3">
                     <span className="text-[16px] font-bold text-black">{statusTextTitle ? statusTextTitle : props.title}</span>
                     <Button type="button" onClick={() => (ref as React.RefObject<HTMLDialogElement>)?.current?.close()} className="bg-white text-black hover:text-gray-700 cursor-pointer hover:bg-white">X</Button>
                 </div>
 
-                {props.title === "حذف" || "ACTIVE" ?
-                    <p className="p-3 mt-3 text-[15px]">{props.placeholder}</p>
+                {props.title === "حذف" || props.title === "ACTIVE" ?
+                    <p className=" mt-3 text-[15px]">{props.placeholder}</p>
                     : colorSpecific ?
                         <div className="w-10 h-10 rounded-full m-3 mb-6 mr-7" style={inlineStyle}></div> :
-                        <div className="flex justify-center items-start  gap-2 flex-col p-3 mt-3 ">
-                            <div className="flex justify-center items-start  gap-2 flex-col p-3 mt-3 w-full">
+                        <div className="flex justify-center items-start  gap-2 flex-col mt-3 ">
+                            <div className="flex justify-center items-start  gap-2 flex-col mt-3 w-full">
                                 <label className="text-[15px] text-black cursor-pointer" htmlFor="mainInput">عنوان:</label>
                                 <input onChange={(e) => setInputChange(e.target.value)}
                                     className="placeholder:text-[14px] outline-blue-300 focus:outline-1 w-full h-11 px-2 rounded-xl border-gray-200 border"
@@ -132,6 +153,22 @@ export const OptionDialog = forwardRef<HTMLDialogElement, OptionDialogProps>(
                     </div>
                 </div>}
 
+                {choseFile && <div>
+                    <label className="w-20 h-20 rounded-lg border bg-gray-50 mt-7 flex justify-center flex-col items-center cursor-pointer ">
+                        <span className="flex justify-center items-center text-3xl font-extralight text-gray-600">+</span>
+
+                        <input className="hidden"  type="file" accept="image/*" onChange={imgHandler} />
+                    </label>
+                    <span className="text-gray-600 text-xs">برای انتخاب آیکون کلیک کنید</span>
+                    {images?.map((img) => {
+                        return (
+                            <Image key={img} src={img} className="w-20 h-20 object-cover rounded-lg border mt-5" width={80} height={80} alt="this is a photo"></Image>
+                        )
+                    })}
+                </div>
+
+                }
+
                 <div className="flex justify-end items-center mt-8 p-3">
                     {
                         props.title === "حذف" || status ?
@@ -141,7 +178,7 @@ export const OptionDialog = forwardRef<HTMLDialogElement, OptionDialogProps>(
                                 <Button onClick={() => mutate({ id: props.id, value: rgba })} className="bg-green-500 text-white hover:bg-green-400 rounded-xl cursor-pointer">
                                     {isPending ? <Spinner /> : "افزودن رنگ"}
                                 </Button> :
-                                <Button onClick={() => mutate({ id: props.id, value: inputChange, secoundValue: secoundInputChange })} className="bg-green-500 text-white hover:bg-green-400 rounded-xl cursor-pointer">
+                                <Button onClick={() => mutate({ id: props.id, value: inputChange, secoundValue: secoundInputChange ,file : imageFile })} className="bg-green-500 text-white hover:bg-green-400 rounded-xl cursor-pointer">
                                     {isPending ? <Spinner /> : statusTextButton ? statusTextButton : "افزودن"}
                                 </Button>
                     }

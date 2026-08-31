@@ -45,27 +45,28 @@ export default function InputOTPForm() {
    }
 
    return (
-      <Card className="mx-auto max-w-md m-auto mt-50">
-         <CardHeader>
-            <CardTitle>Verify your phoneNumber</CardTitle>
+      <Card className="mx-auto max-w-md m-auto mt-40 w-full sm:max-w-md h-auto shadow-[0_0_20px_#fecaca]">
+
+         <CardHeader className="flex flex-col justify-center items-center gap-8">
+            <CardTitle className="text-center">تایید هویت شما</CardTitle>
             <CardDescription>
-               Enter the verification code we sent to your phone:{" "}
+               کد تاییدی که به شماره شما ارسال شده را وارد کنید:{" "}
                <span className="font-medium">{phone}</span>.
             </CardDescription>
          </CardHeader>
+
          <CardContent>
-            <Field>
-               <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="otp-verification">
-                     Verification code
-                  </FieldLabel>
+            <Field className="justify-center items-center flex flex-col gap-5">
+
+               <div className="flex items-center justify-end mb-4">
                   <Button variant="outline" size="xs">
                      <RefreshCwIcon />
-                     Resend Code
+                     ارسال مجدد
                   </Button>
                </div>
-               <InputOTP maxLength={6} id="otp-verification" onChange={(e) => { setOtp(e) }} required>
-                  <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
+
+               <InputOTP maxLength={6} id="otp-verification" onChange={(e) => { setOtp(e) }} required >
+                  <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl ml-10">
                      <InputOTPSlot index={0} />
                      <InputOTPSlot index={1} />
                      <InputOTPSlot index={2} />
@@ -77,24 +78,30 @@ export default function InputOTPForm() {
                      <InputOTPSlot index={5} />
                   </InputOTPGroup>
                </InputOTP>
-               <FieldDescription>
-                  <Link href="/registration">wrong Number? Try again</Link>
+
+               <FieldDescription className="flex items-center justify-end">
+                  <Link href="/registration" className="hover:text-red-600">تغییر شماره</Link>
                </FieldDescription>
             </Field>
          </CardContent>
+
          <CardFooter>
+
             <Field>
-               <Button onClick={verifyOtp} type="button" className="w-full" disabled={isPending}>
-                  {isPending ? <div className="flex items-center gap-4"><Spinner /></div> : "verify"}
+               <Button onClick={verifyOtp} type="button" className="w-full bg-red-600 hover:bg-red-500 text-white" disabled={isPending}>
+                  {isPending ? <div className="flex items-center gap-4 "><Spinner /></div> : "verify"}
                </Button>
-               <div className="text-muted-foreground text-sm">
-                  Having trouble signing in?{" "}
+
+               <div className="text-muted-foreground text-sm flex items-center justify-end mt-6">
                   <a
                      href="#"
-                     className="hover:text-primary underline underline-offset-4 transition-colors"
+                     className="hover:text-red-600 underline underline-offset-4 transition-colors"
                   >
                      Contact support
                   </a>
+                  <span className="pl-2">
+                     در ورود به حساب مشکا دارید؟{" "}
+                  </span>
                </div>
             </Field>
          </CardFooter>

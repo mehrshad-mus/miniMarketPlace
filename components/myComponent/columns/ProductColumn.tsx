@@ -18,6 +18,8 @@ export const ProductColumn = ({withOffer} : {withOffer?: boolean}) => {
             rowWidth: "w-2/16",
             render: (value: string, row: any, index: number) => {
 
+                console.log(value)
+                
                 return (
                     <div className="flex justify-center items-center">
 

@@ -1,6 +1,6 @@
 import { FormFields, schema } from "@/lib/zodSchema/schema";
 import { NextRequest, NextResponse } from "next/server";
-import { createProduct, deleteProduct, getAllProduct, updateProduct } from "@/services/product/product.service";
+import { createProduct, deleteProduct, getAllProduct, getProductByIdForUser, updateProduct } from "@/services/product/product.service";
 
 
 export async function GET(request: NextRequest) {
@@ -11,6 +11,13 @@ export async function GET(request: NextRequest) {
         const currentPage = searchParams.get("page");
         const productId = searchParams.get("id");
         const offers = searchParams.get("offers");
+
+        const productForUser = searchParams.get("productForUser");
+        if(productForUser){
+            const {product} = await getProductByIdForUser({productId : productForUser})
+
+            return NextResponse.json({ product}, { status: 200 })
+        }
 
         const {products,totalCount} = await getAllProduct({currentPage , productId , offers})
 

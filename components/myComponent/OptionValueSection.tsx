@@ -3,11 +3,6 @@ import { tryParseRGBA } from "@/lib/utils";
 import { useState } from "react"
 import { Control, useFieldArray, UseFormWatch } from "react-hook-form";
 
-// type VariantItem = {
-//     optionName: string
-//     value: string
-// }
-
 export type ScrollInputProp = {
     data: {
         id: string;
@@ -111,8 +106,3 @@ export const OptionValueSection = ({ optionName, data, control, optionIndex, wat
         </div>
     )
 }
-
-
-
-
-{/* {error && <span className="text-red-700 w-full text-end text-xs mt-2 font-bold pr-2">{error}</span>} */ }

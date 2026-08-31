@@ -47,14 +47,15 @@ model User {
   seller         Seller?
   sellerRequests SellerRequest?
   order          Order[]
-  addresses      UserAddress[]
+  addresses      Address[]
   tickets        Ticket[]
   favorites      Favorite[]
   comments       Comment[]
   recentViews    RecentView[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  payments  Payment[]
 }
 
 model Seller {
@@ -62,8 +63,8 @@ model Seller {
   name         String
   nationalCode String
   storeName    String
-  phone        String 
-  location   String @default("shiraz")
+  phone        String
+  location     String @default("shiraz")
 
   offers          Offer[]
   articles        Article[]
@@ -211,15 +212,12 @@ model BankAccount {
   updatedAt DateTime @updatedAt
 }
 
-model UserAddress {
-  id                String @id @default(uuid())
-  receiverFirstName String
-  receverLastName   String
-  province          String
-  city              String
-  receverNumber     String
-  postalCode        String
-  address           String
+model Address {
+  id           String  @id @default(uuid())
+  address      String
+  latitude     Float
+  longitude    Float
+  showAsDefaul Boolean @default(true)
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -297,11 +295,12 @@ model Comment {
 
 //not complieted
 model Cart {
-  id          String  @id @default(uuid())
-  name        String?
-  description String?
+  id String @id @default(uuid())
 
-  cartItem CartItem[]
+  cartAddress String?
+  latitude    Float?
+  longitude   Float?
+  cartItem    CartItem[]
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
@@ -311,8 +310,10 @@ model Cart {
 }
 
 model CartItem {
-  id       String @id @default(uuid())
-  quentity Int
+  id String @id @default(uuid())
+
+  price    Decimal
+  quantity Int
 
   offerId String
   offer   Offer  @relation(fields: [offerId], references: [id])
@@ -365,6 +366,24 @@ model OrderItem {
   @@index([offerId])
 }
 
+model Payment {
+  id     String        @id @default(ulid())
+  amount Int
+  status PaymentStatus
+
+  authority String? @unique
+  refId     String?
+
+  userId String
+
+  user User @relation(fields: [userId], references: [id])
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Brand {
   id   String  @id @default(uuid())
   name String
@@ -395,8 +414,9 @@ model DefaultShippingMethod {
 
 //related to product and product option
 model Category {
-  id   String @id @default(uuid())
-  name String
+  id      String  @id @default(uuid())
+  name    String
+  iconUrl String?
 
   productes       Product[]
   productRequests ProductRequest[]
@@ -418,6 +438,7 @@ model Product {
   status           Status?
   slug             String? @unique
   soldCount        Int     @default(0)
+  rate             Int     @default(0)
 
   specialProduct Boolean @default(false)
   showComment    Boolean @default(true)
@@ -595,6 +616,12 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }
 
 enum AdminState {

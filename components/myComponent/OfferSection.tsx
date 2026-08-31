@@ -11,6 +11,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import Spinner from './Spinner '
 import { toast } from 'sonner'
 import OfferColumn from '@/components/myComponent/columns/OfferColumn'
+import { useRouter } from 'next/navigation'
 
 export default function OfferSection({ productId, editOffer, title, mutaionKey, mode, invalidations, buttonTitle }:
     {
@@ -23,7 +24,7 @@ export default function OfferSection({ productId, editOffer, title, mutaionKey, 
         invalidations: string[],
     }) {
     const queryClient = useQueryClient();
-
+    const router = useRouter()
     const {
         register,
         handleSubmit,
@@ -38,7 +39,7 @@ export default function OfferSection({ productId, editOffer, title, mutaionKey, 
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["productOffer", productId],
-        queryFn: () => offer.getAllOffer({ productId })
+        queryFn: () => offer.getAllOffer({productId})
     })
 
     const { mutate, isError, isPending } = useMutation({
@@ -46,6 +47,7 @@ export default function OfferSection({ productId, editOffer, title, mutaionKey, 
         mutationFn: mode === "create" ? offer.createOffer : offer.updateOffer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: invalidations })
+            router.push(`/admin/offers`)
             toast.success("با موفقیت تغییر کرد", {
                 position: "bottom-left", style: {
                     background: "#98e897",

@@ -10,12 +10,14 @@ import { product, productRequest, userProfileData } from "@/lib/queries";
 import { schema, FormFields } from "@/lib/zodSchema/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export const Create = () => {
     const queryClient = useQueryClient();
+    const router = useRouter()
 
     const [detailPage, setDetailPage] = useState("importantDetail")
 
@@ -25,6 +27,7 @@ export const Create = () => {
         watch,
         control,
         setValue,
+        getValues,
         formState: { isSubmitting, errors }
     } = useForm<FormFields>({
         resolver: zodResolver(schema),
@@ -39,7 +42,21 @@ export const Create = () => {
     const { mutate, isPending: adminRequestPending } = useMutation({
         mutationKey: ["createProduct"],
         mutationFn: product.createProduct,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["products"] }); },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            toast.success("محصول با موفقیت ساخته شد", {
+                position: "bottom-left", style: {
+                    background: "#CBC3E3",
+                    color: "#5D3FD3",
+                    direction: "rtl",
+                    display: "flex",
+                    justifyContent: "start",
+                    alignItems: "center",
+                    gap: "12px"
+                },
+            })
+            router.push("/admin/product")
+        },
         onError: (err) => { console.log(err) }
     })
 
@@ -48,7 +65,6 @@ export const Create = () => {
         mutationFn: productRequest.createProductRequest,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["productRequests"] });
-
             toast.success("درخواست شما با مفقیت ثبت شد", {
                 position: "bottom-left", style: {
                     background: "#CBC3E3",
@@ -60,7 +76,6 @@ export const Create = () => {
                     gap: "12px"
                 },
             })
-
         },
         onError: (err) => { console.log(err) }
     })
@@ -91,7 +106,7 @@ export const Create = () => {
 
                 <MainProductDetailPage register={register} setValue={setValue} watch={watch} errors={errors} detailPage={detailPage} />
 
-                <MediaSection setValue={setValue} errors={errors} detailPage={detailPage} />
+                <MediaSection watch={watch} setValue={setValue} errors={errors} detailPage={detailPage}/>
 
                 <OptionPage append={append} control={control} errors={errors} fields={fields} watch={watch} setValue={setValue} detailPage={detailPage} />
 

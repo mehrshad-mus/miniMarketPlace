@@ -1,7 +1,7 @@
 import { DetailPageProps } from '@/lib/constant/enums'
 import { FormFields } from '@/lib/zodSchema/schema'
 import React, { useEffect, useState } from 'react'
-import { FieldErrors, UseFormSetValue } from 'react-hook-form'
+import { FieldErrors, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import Image from "next/image";
 import { ProductRequestImage } from '@/app/generated/prisma/client';
 
@@ -25,7 +25,8 @@ const MediaSection = (
             setValue: UseFormSetValue<FormFields>
             errors: FieldErrors<FormFields>
             detailPage: string,
-            defaulImages?: ProductRequestImage[]
+            defaulImages?: ProductRequestImage[],
+            watch? : UseFormWatch<FormFields>
         }
 ) => {
 
@@ -63,23 +64,23 @@ const MediaSection = (
         }
     }
 
-    useEffect(() => {
-        if (!defaulImages) return
+    // useEffect(() => {
+    //     if (!defaulImages) return
 
-        async function loadImages() {
+    //     async function loadImages() {
             
-            const imageFiles = await Promise.all(
-                images.map((imgURL) => 
-                    urlToFile(imgURL)
-                )
-            )
+    //         const imageFiles = await Promise.all(
+    //             images.map((imgURL) => 
+    //                 urlToFile(imgURL)
+    //             )
+    //         )
 
-            setValue("images", imageFiles, { shouldValidate: true })
-        }
+    //         setValue("images", imageFiles, { shouldValidate: true })
+    //     }
 
-        loadImages()
+    //     loadImages()
 
-    }, [defaulImages])
+    // }, [defaulImages])
     
     return (
         <div className={`justify-center items-start flex-col w-4/5 py-3 px-5 gap-6  ${detailPage === DetailPageProps.MEDIA ? "flex" : `hidden`}`}>
@@ -94,7 +95,7 @@ const MediaSection = (
                     <label className="w-60 h-60 rounded-lg border bg-gray-50 mt-5 flex justify-center flex-col items-center cursor-pointer">
                         <span className="flex justify-center items-center text-7xl font-extralight text-gray-600">+</span>
                         <span className="text-gray-600">برای انتخاب عکس کلیک کنید</span>
-                        <input className="hidden" type="file" accept="image/*" onChange={imgHandler} multiple />
+                        <input className="hidden" type="file" accept="image/*" onChange={imgHandler}  />
                     </label>
 
                     {images?.map((img) => {
@@ -102,6 +103,7 @@ const MediaSection = (
                             <Image key={img} src={!fileImagePath ? `/uploads/${img}` : img} className="w-60 h-60 object-cover rounded-lg border mt-5" width={240} height={240} alt="this is a photo"></Image>
                         )
                     })}
+                    
                     {errors.images && <span className="text-red-700 w-full text-xs mt-2 font-bold pr-2">{errors.images.message}</span>}
                 </div>
             </div>

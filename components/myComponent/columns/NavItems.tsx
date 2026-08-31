@@ -340,6 +340,7 @@ export const NavItems = ({ data }: { data: User | undefined }) => {
         {
             name: "دسته‌بندی",
             url: "/admin/category",
+            permission: ["admin"],
             icon: (isPathNameIncludeURL: boolean) => {
                 return (
                     <span className={`${isPathNameIncludeURL && navTextColor({ user: data })}`}>

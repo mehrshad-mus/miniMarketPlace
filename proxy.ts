@@ -12,12 +12,34 @@ export default async function proxy(request: NextRequest) {
 
     try {
         const decode = await verifyToken(user)
-        // console.log("hello")
+        const urlLevel = request.url
         
-        if (decode.userRole === "USER" || decode.userRole === "SELLER") {
-            url.pathname = "/registration"
-            return NextResponse.redirect(url)
+        if (urlLevel.startsWith("http://localhost:3000/admin")) {
+            if (decode.userRole !== "ADMIN") {
+                url.pathname = "/registration"
+                return NextResponse.redirect(url)
+            }
         }
+        
+        if (urlLevel.startsWith("http://localhost:3000/seller")) {
+            if (decode.userRole !== "SELLER") {
+                url.pathname = "/registration"
+                return NextResponse.redirect(url)
+            }
+        }
+        if (urlLevel.startsWith("http://localhost:3000/user")) {
+            if (decode.userRole !== "USER") {
+                url.pathname = "/registration"
+                return NextResponse.redirect(url)
+            }
+        }
+        
+
+
+        // if (decode.userRole === "USER" || decode.userRole === "SELLER") {
+        //     url.pathname = "/registration"
+        //     return NextResponse.redirect(url)
+        // }
 
         return NextResponse.next()
     } catch (error) {
@@ -27,5 +49,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*']
+    matcher: ['/admin/:path*' , '/seller/:path*' , '/user/:path*']
 }

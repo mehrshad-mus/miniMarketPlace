@@ -1,10 +1,11 @@
 import { SellerRequest, User } from "@/app/generated/prisma/client";
 import { errorHandler } from "./utils";
 import { dialogProps, categoryType, FormFields, OfferField, ProfileFields, StoreRequestFields } from "./zodSchema/schema";
-import { productRequestType, productWithBrandAndCategory } from "./types/types";
+import { cartType, offerType, productRequestType, productWithBrandAndCategory } from "./types/types";
 import { getSellerProductRequestCount, getSellerRequestCount } from "@/lib/actions/getCounts";
 import { changeAdminStatuSellerRequest } from "./actions/AdminStatusSellerRequest";
 import { rejectSellerRequestFn } from "./actions/rejectSellerRequest";
+import { autoSliderProduct } from "./actions/productForAutoSlider";
 
 export const registration = {
     sendPhoneNumber: async (phone: string) => {
@@ -107,11 +108,11 @@ export const users = {
 }
 
 export const seller = {
-    createSeller : async(id: string) => {
-        const res = await fetch("/api/seller" , {
-            method : "POST",
+    createSeller: async (id: string) => {
+        const res = await fetch("/api/seller", {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({id})
+            body: JSON.stringify({ id })
         })
 
         await errorHandler(res)
@@ -266,6 +267,7 @@ export const options = {
 }
 
 export const category = {
+
     getAllCategory: async () => {
         const res = await fetch("/api/product/category")
 
@@ -279,12 +281,17 @@ export const category = {
         return category
     },
 
-    createCategory: async ({ value }: dialogProps) => {
+    createCategory: async ({ value , file }: dialogProps) => {
+        
+        const formData = new FormData()
+        formData.append("payload" , JSON.stringify({value}))
+        file?.map((fi) => {
+            formData.append("icon" , fi)    
+        })
 
         const res = await fetch("/api/product/category", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ value })
+            body: formData
         })
 
         const data = await res.json() as { message: string }
@@ -298,15 +305,24 @@ export const category = {
         return { message }
 
     },
-    editCategoryName: async ({ value, id }: dialogProps) => {
+    editCategoryName: async ({ value, id ,file}: dialogProps) => {
+
+        const formData = new FormData()
+        formData.append("payload" , JSON.stringify({value , id}))
+        file?.map((fi) => {
+            formData.append("icon" , fi)    
+        })
 
         const res = await fetch("/api/product/category", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ value, id })
+            body: formData
         })
 
         const data = await res.json() as { message: string }
+
+        if (!res.ok) {
+            throw new Error(data.message)
+        }
 
         const { message } = data
         console.log(message)
@@ -434,10 +450,25 @@ export const product = {
         return { products, totalCount }
     },
 
-    createProduct: async (data: FormFields) => {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+    getProductForUser: async ({ productId }: { productId: string }) => {
 
-        console.log(data)
+        const params = new URLSearchParams();
+        params.set("productForUser", productId);
+
+        const res = await fetch(`/api/product?${params}`)
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { product } = await res.json()
+
+        return { product } as { product: productWithBrandAndCategory }
+    },
+
+    createProduct: async (data: FormFields) => {
+
         const formData = new FormData();
 
         formData.append(
@@ -469,8 +500,6 @@ export const product = {
             formData.append("video", data.video);
         }
 
-        console.log(formData)
-
         const res = await fetch("/api/product", {
             method: "POST",
             body: formData
@@ -483,7 +512,7 @@ export const product = {
 
         const { message } = await res.json() as { message: string }
 
-        return await res.json() as { message: string }
+        return { message }
     },
 
     updateProduct: async (data: FormFields) => {
@@ -553,7 +582,7 @@ export const product = {
 
         const { message } = await res.json() as { message: string }
 
-        return {message}
+        return { message }
     }
 }
 
@@ -660,6 +689,8 @@ export const offer = {
             currentPage?: number,
             productId?: string
         }) => {
+
+        console.log(productId)
 
         const params = new URLSearchParams()
         if (sellerId) {
@@ -801,19 +832,129 @@ export const storeRequest = {
     }
 }
 
-export const extraQueryis = {
+export const cart = {
+    getCart: async () => {
+        const res = await fetch("/api/cart")
 
-    getRequestCountForStore : async() => {
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
 
-        const {count : sellerRequest} = await getSellerRequestCount()
-        const {count: productRequest} = await getSellerProductRequestCount()
+        const { cart } = await res.json() as { cart: cartType | null }
 
-        return {sellerRequest , productRequest}
+        return cart
+
     },
-    changeAdminStatusForSellerRequest : async(id : string) => {
-        const changeAdminStatus = await changeAdminStatuSellerRequest(id)
+
+    createCart: async ({ offer, quantity }: { offer: offerType | undefined, quantity: number, }) => {
+        const res = await fetch("/api/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ offer, quantity })
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { message, cart } = await res.json()
+
+        console.log(cart)
+        return message
     },
-    rejectSellerRequest : async(id : string) => {
-        const rejectSellerRequest = await rejectSellerRequestFn(id)
+
+    updateCart: async ({ offerId, quantity, cartItemId, location }:
+        {
+            offerId?: string,
+            quantity?: number,
+            cartItemId?: string,
+            location?: { latitude: number | null, longitude: number | null , formatted_address: string | null }
+        }) => {
+
+        const res = await fetch("/api/cart", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ offerId, quantity, cartItemId, location})
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { message, cart } = await res.json()
+
+        console.log(cart)
+        return message
+    },
+
+    deleteCart: async ({ cartItemId }: { cartItemId: string }) => {
+        const res = await fetch("/api/cart", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cartItemId })
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { message } = await res.json()
+
+        return message
     }
 }
+
+export const address = {
+    createAddress: async ({ latitude, longitude }: { latitude: number, longitude: number }) => {
+
+        const res = await fetch("/api/address", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ latitude, longitude })
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { address } = await res.json()
+        console.log(address)
+    }
+}
+
+export const payment = {
+    createPayment : async() => {
+        const res = await fetch("/api/payment/create" , {
+            method: "PUT",
+            headers : {"Content-Type" : "application/json"},
+        })
+    }
+}
+
+export const extraQueryis = {
+
+    getRequestCountForStore: async () => {
+
+        const { count: sellerRequest } = await getSellerRequestCount()
+        const { count: productRequest } = await getSellerProductRequestCount()
+
+        return { sellerRequest, productRequest }
+    },
+    changeAdminStatusForSellerRequest: async (id: string) => {
+        const changeAdminStatus = await changeAdminStatuSellerRequest(id)
+    },
+    rejectSellerRequest: async (id: string) => {
+        const rejectSellerRequest = await rejectSellerRequestFn(id)
+    },
+
+    getTenProductForAutoSlider: async () => {
+        const products = await autoSliderProduct()
+        return products
+    },
+}
+

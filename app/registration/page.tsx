@@ -47,12 +47,21 @@ export default function RegistrationForm() {
    }
 
    return (
-      <Card className="w-full sm:max-w-md m-auto mt-50">
-         <CardHeader>
-            <CardTitle>Registration Form</CardTitle>
-            <CardDescription>
-               Please enter your phone number to register.
+      <Card className="w-150 sm:max-w-md m-auto mt-50w-full mt-40 pt-10 px-3 h-110 shadow-[0_0_20px_#fca5a5] rounded-full">
+
+         <CardHeader className="flex justify-center flex-col items-center gap-15">
+
+            <CardTitle className="flex justify-center items-center gap-2">
+               <span className="text-red-600 text-3xl font-bold">پارس</span>
+               <span className="text-3xl font-bold">فروشگاه</span>
+            </CardTitle>
+
+            <CardDescription className="flex justify-center items-center gap-1 font-bold text-black">
+               <span>ورود به حساب</span>
+               <span className="text-red-600">/</span>
+               <span>ثبت نام</span>
             </CardDescription>
+
          </CardHeader>
          <CardContent>
             <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
@@ -62,18 +71,16 @@ export default function RegistrationForm() {
                      control={form.control}
                      render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                           <FieldLabel htmlFor="form-rhf-demo-phone">
-                              Phone Number
-                           </FieldLabel>
                            <Input
                               {...field}
                               id="form-rhf-demo-phone"
                               aria-invalid={fieldState.invalid}
-                              placeholder="Enter your phone number"
+                              placeholder="شماره خود را وارد کنید"
                               autoComplete="off"
+                              className="placeholder:text-center flex justify-center items-center h-10"
                            />
                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
+                              <FieldError className="flex justify-center items-center" errors={[fieldState.error]} />
                            )}
                         </Field>
                      )}
@@ -81,13 +88,14 @@ export default function RegistrationForm() {
                </FieldGroup>
             </form>
          </CardContent>
-         <CardFooter>
-            <Field orientation="horizontal">
-               <Button type="button" variant="outline" onClick={() => form.reset()}>
-                  Reset
+
+         <CardFooter className="mt-10">
+            <Field orientation="horizontal" className="flex justify-end items-center pr-5">
+               <Button type="submit" form="form-rhf-demo" disabled={isPending} className="bg-red-600 hover:bg-red-500 text-white">
+                  {isPending ? <div className="flex items-center gap-4"><Spinner /></div> : "ادامه"}
                </Button>
-               <Button type="submit" form="form-rhf-demo" disabled={isPending}>
-                  {isPending ? <div className="flex items-center gap-4"><Spinner /></div> : "verify"}
+               <Button type="button" variant="outline" onClick={() => form.reset()}>
+                  پاک کردن
                </Button>
             </Field>
          </CardFooter>
