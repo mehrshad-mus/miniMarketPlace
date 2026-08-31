@@ -8,11 +8,6 @@ import path from "path";
 
 
 export async function getAllCategory() {
-    const user = await getCurrentUser()
-
-    if (!user || user.userRole === "USER") {
-        throw new Error("you havnt access!")
-    }
 
     const category = await prisma.category.findMany({
         omit: {
