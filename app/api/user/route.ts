@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { ProfileFields, ProfileSchema } from "@/lib/zodSchema/schema";
 import { editProfile, getUsers } from "@/services/user/user.service";
 import { NextRequest, NextResponse } from "next/server";
-import { toGregorian } from "jalaali-js";
 
 export async function GET(request: NextRequest) {
     try {

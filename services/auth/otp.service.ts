@@ -6,8 +6,20 @@ export async function sendOtp(phone: string) {
 
     const isOtpexists = await prisma.otp.findFirst({ where: { phone } });
 
-    if (isOtpexists)
-        throw new Error("OTP already sent to this phone number, please wait before requesting a new one")
+    if (isOtpexists) {
+        if (isOtpexists.expiresAt > new Date()) {
+            throw new Error(
+                "OTP already sent to this phone number, please wait before requesting a new one"
+            )
+        }
+
+        await prisma.otp.delete({
+            where: {
+                id: isOtpexists.id,
+            },
+        })
+    }
+
 
     const { hashedOtp } = await generateOtp();
 
@@ -28,7 +40,7 @@ export async function sendOtp(phone: string) {
 //verify otp
 export async function verifyOtp(phone: string, otp: string) {
 
-    const otpFromDb = await prisma.otp.findFirst({ where: { phone} })
+    const otpFromDb = await prisma.otp.findFirst({ where: { phone } })
     if (!otpFromDb) {
         throw new Error("OTP not found for this phone number")
     }
@@ -48,7 +60,7 @@ export async function verifyOtp(phone: string, otp: string) {
     })
 
     const deletedOtp = await prisma.otp.delete({
-        where : {phone}
+        where: { phone }
     })
 
     if (!user) {

@@ -1,5 +1,3 @@
-import { generateOtp } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { phoneFormSchema, TPhoneFormData } from "@/lib/zodSchema/schema";
 import { sendOtp } from "@/services/auth/otp.service";
 import { NextRequest, NextResponse } from "next/server";
