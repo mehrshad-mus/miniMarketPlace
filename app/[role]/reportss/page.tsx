@@ -23,7 +23,6 @@ export default function Reports() {
                     </div>
                 </div>
 
-                <NavButton title1={"همه"} title2={"مدیر"} title3={"فروشنده"} title4={"کاربر"}/>
 
                 <div className="w-full px-8">
                     <table className="w-full">
@@ -48,7 +47,6 @@ export default function Reports() {
                     </table>
                 </div>
 
-                <ChangeResultButtons pageNumber={121}/>
             </div>
 
         </div>

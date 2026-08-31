@@ -64,7 +64,7 @@ export default function TrackingView() {
                     </table>
                 </div>
 
-                <ChangeResultButtons pageNumber={321}/>
+               
             </div>
         </div>
     )

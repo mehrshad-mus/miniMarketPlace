@@ -108,9 +108,7 @@ export const Transactions = () => {
                         <Button className="bg-blue-500 hover:bg-blue-400 h-10 w-10 rounded-xl cursor-pointer"></Button>
                     </div>
                 </div>
-                <NavButton title1="همه" title2="واریز" title3="برداشت" title4="کاربران" title5="فروشندگان" title6="توسط مدیریت" title7="برداشت بانکی"/>
                 <Table data={data} columns={typedColumns} />
-                <ChangeResultButtons pageNumber={23}/>
             </div>
         </div>
     )

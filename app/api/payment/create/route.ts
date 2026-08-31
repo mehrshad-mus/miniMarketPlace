@@ -32,11 +32,12 @@ export async function PUT(request: NextRequest) {
             totalPrice += ((offer.price - (offer.price * offer.discount / 100)) * item.quantity) 
         }
 
-        const newPayment = await prisma.payment.create({data : {
-            userId : currentUser.userId,
-            amount : totalPrice,
-            status : "PENDING",
-        }})
+        // const newPayment = await prisma.payment.create({data : {
+        //     userId : currentUser.userId,
+        //     amount : totalPrice,
+        //     status : "PENDING",
+
+        // }})
         console.log(totalPrice)
     
         return NextResponse.json({message : "hiii"} , {status: 200})

@@ -117,7 +117,6 @@ export const Processing = () => {
                     </tbody>
                 </table>
 
-                <ChangeResultButtons pageNumber={5}/>
             </div>
         </div>
     )

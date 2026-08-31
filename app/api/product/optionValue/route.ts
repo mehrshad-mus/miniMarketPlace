@@ -1,10 +1,9 @@
-import { optionProps } from "@/lib/zodSchema/schema";
 import { createOptionValue, deleteOptionValue, editOptionValue } from "@/services/productOption/optionValue/optionValue.service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json() as optionProps
+        const body = await request.json()
 
         const { id, value } = body
 
