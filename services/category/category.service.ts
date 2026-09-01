@@ -16,6 +16,10 @@ export async function getAllCategory() {
         }
     })
 
+    if(!category){
+        return undefined
+    }
+
     return category
 }
 
