@@ -16,7 +16,6 @@ import {
 
 } from "@/components/ui/sidebar"
 import * as Collapsible from "@radix-ui/react-collapsible"
-import { Button } from "../ui/button"
 import { ChevronDown } from "lucide-react"
 import React, { useEffect } from "react";
 import Link from "next/link";
@@ -59,6 +58,13 @@ export default function AppSidebar() {
 
     return (
         <Sidebar>
+            {isLoading && <p>Loading...</p>}
+
+            {error && (
+                <p>
+                    Failed to load user
+                </p>
+            )}
             {data &&
                 <SidebarContent className={data.role === "ADMIN" ? "admin-scrollbar" : data.role === "SELLER" ? "seller-scrollbar" : "user-scrollbar"}>
                     {sidebarItems.map((sidebarItems) => {
