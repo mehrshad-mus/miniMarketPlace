@@ -27,7 +27,6 @@ export async function getAllCategory() {
 export async function createCategory(value: string, icon: File) {
 
     const user = await getCurrentUser()
-
     if (!user || user.userRole !== accessRole) {
         throw new Error("you havnt access!")
     }
