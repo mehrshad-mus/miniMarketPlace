@@ -5,6 +5,7 @@ import { processSvg } from "@/lib/processSvg.";
 import { randomUUID } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { put } from "@vercel/blob"
 
 
 export async function getAllCategory() {
@@ -47,26 +48,33 @@ export async function createCategory(value: string, icon: File) {
 
     console.log(processedSvg)
 
-    const fileName = `${randomUUID()}.svg`
+    // const fileName = `${randomUUID()}.svg`
+    // const uploadDir = path.join(
+    //     process.cwd(),
+    //     "public",
+    //     "uploads",
+    //     "categories"
+    // )
+    // await mkdir(uploadDir, { recursive: true })
+    // await writeFile(
+    //     path.join(uploadDir, fileName),
+    //     processedSvg,
+    //     "utf8"
+    // )
+    // const iconUrl = `/uploads/categories/${fileName}`
 
+    const fileName = `categories/${randomUUID()}.svg`
 
-    const uploadDir = path.join(
-        process.cwd(),
-        "public",
-        "uploads",
-        "categories"
-    )
-
-    await mkdir(uploadDir, { recursive: true })
-
-    await writeFile(
-        path.join(uploadDir, fileName),
+    const blob = await put(
+        fileName,
         processedSvg,
-        "utf8"
+        {
+            access: "private",
+            contentType: "image/svg+xml",
+        }
     )
 
-    const iconUrl = `/uploads/categories/${fileName}`
-
+    const iconUrl = blob.url
 
     const newCategory = await prisma.category.create({
         data: {
@@ -163,3 +171,4 @@ export async function deletCategory(id: string) {
 
     return newCategory.name
 }
+
