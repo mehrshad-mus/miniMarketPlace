@@ -68,7 +68,7 @@ export async function createCategory(value: string, icon: File) {
         fileName,
         processedSvg,
         {
-            access: "private",
+            access: "public",
             contentType: "image/svg+xml",
         }
     )
