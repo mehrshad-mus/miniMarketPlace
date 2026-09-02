@@ -149,6 +149,7 @@ export const EditProfileSection = ({ data, userFlag }: { data: User, userFlag: b
                                                 setValue("avatar", svg)
                                                 avatarDialog.current?.close()
                                             }}
+                                           
                                             key={svg}
                                             className="avatar-image"
                                             src={svg}

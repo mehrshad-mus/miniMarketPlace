@@ -60,7 +60,7 @@ export const users = {
             params.set("search", searchPhone)
         }
 
-        const res = await fetch(`http://localhost:3000/api/user?${params}`, {
+        const res = await fetch(`/api/user?${params}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         });
