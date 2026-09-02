@@ -123,7 +123,7 @@ export const seller = {
 }
 
 export const userProfileData = async () => {
-    const res = await fetch(`http://localhost:3000/api/user?userId=${"currentUser"}`)
+    const res = await fetch(`/api/user?userId=${"currentUser"}`)
 
     const { currentUser, message }: { currentUser: User, message: string } = await res.json()
 
