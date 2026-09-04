@@ -6,6 +6,7 @@ import { getSellerProductRequestCount, getSellerRequestCount } from "@/lib/actio
 import { changeAdminStatuSellerRequest } from "./actions/AdminStatusSellerRequest";
 import { rejectSellerRequestFn } from "./actions/rejectSellerRequest";
 import { autoSliderProduct } from "./actions/productForAutoSlider";
+import { userLogoutAction } from "./actions/logout";
 
 export const registration = {
     sendPhoneNumber: async (phone: string) => {
@@ -956,5 +957,10 @@ export const extraQueryis = {
         const products = await autoSliderProduct()
         return products
     },
+
+    userLogout : async() => {
+        const message = await userLogoutAction()
+        return message
+    }
 }
 

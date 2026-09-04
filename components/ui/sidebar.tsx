@@ -24,6 +24,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Link from "next/link"
+import { motion } from "motion/react"
+import { useRouter } from "next/navigation"
+import { useMutation } from "@tanstack/react-query"
+import { extraQueryis } from "@/lib/queries"
+import Spinner from "../myComponent/Spinner "
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -253,29 +259,83 @@ function Sidebar({
   )
 }
 
+
 function SidebarTrigger({
   className,
   onClick,
+  userRole,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & { userRole: string | undefined }) {
+
   const { toggleSidebar } = useSidebar()
 
+  const router = useRouter()
+  const { mutate, isPending, isError } = useMutation({
+    mutationKey: ["logout"],
+    mutationFn: extraQueryis.userLogout,
+    onSuccess : () => {
+      router.push("/registration")
+    }
+  })
+
+  const roleColor =
+    userRole === "ADMIN"
+      ? "#3b82f6"
+      : userRole === "SELLER"
+        ? "#a855f7"
+        : "#ef4444"
+
   return (
-    <Button
-      data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("size-7", className)}
-      onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
-      }}
-      {...props}
-    >
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+    <div className="w-full justify-between flex items-center pl-10 py-1">
+
+      <div className="flex justify-center items-center gap-3">
+        <Button
+          data-sidebar="trigger"
+          data-slot="sidebar-trigger"
+          variant="ghost"
+          size="icon"
+          className={cn("size-7", className)}
+          onClick={(event) => {
+            onClick?.(event)
+            toggleSidebar()
+          }}
+          {...props}
+        >
+          <PanelLeftIcon />
+          <span className="sr-only">Toggle Sidebar</span>
+        </Button>
+
+        <Button className={`${userRole === "ADMIN" ? "bg-blue-600 hover:bg-blue-400" : userRole === "SELLER" ? "bg-purple-600 hover:bg-purple-500" : "bg-red-600 hover:bg-red-500"} 
+        text-white h-auto py-1`}
+          onClick={() => mutate()}
+        >
+          {isPending ? <Spinner/> : isError ? "خطا در خروج" : "خروج"}
+        </Button>
+      </div>
+
+      <Link href={"/"}>
+        <motion.span
+          style={{
+            "--role-color": roleColor,
+          } as React.CSSProperties}
+          className={`hover:text-gray-400 inline-block 
+            bg-[linear-gradient(90deg,black_0%,black_30%,var(--role-color)_50%,black_70%,black_100%)]
+             bg-size-[200%_100%] bg-clip-text text-transparent`}
+          animate={{
+            backgroundPosition: ["100% 0%", "-100% 0%"],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          بازگشت به صفحه اصلی
+        </motion.span>
+      </Link>
+    </div>
+
+
   )
 }
 
@@ -569,7 +629,7 @@ function SidebarMenuAction({
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground data-[state=open]:opacity-100 md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground data-[state=open]:opacity-100 md:opacity-0",
         className
       )}
       {...props}
@@ -599,43 +659,43 @@ function SidebarMenuBadge({
   )
 }
 
-function SidebarMenuSkeleton({
-  className,
-  showIcon = false,
-  ...props
-}: React.ComponentProps<"div"> & {
-  showIcon?: boolean
-}) {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
+// function SidebarMenuSkeleton({
+//   className,
+//   showIcon = false,
+//   ...props
+// }: React.ComponentProps<"div"> & {
+//   showIcon?: boolean
+// }) {
+//   // Random width between 50 to 90%.
+//   const width = React.useMemo(() => {
+//     return `${Math.floor(Math.random() * 40) + 50}%`
+//   }, [])
 
-  return (
-    <div
-      data-slot="sidebar-menu-skeleton"
-      data-sidebar="menu-skeleton"
-      className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)}
-      {...props}
-    >
-      {showIcon && (
-        <Skeleton
-          className="size-4 rounded-md"
-          data-sidebar="menu-skeleton-icon"
-        />
-      )}
-      <Skeleton
-        className="h-4 max-w-(--skeleton-width) flex-1"
-        data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-          } as React.CSSProperties
-        }
-      />
-    </div>
-  )
-}
+//   return (
+//     <div
+//       data-slot="sidebar-menu-skeleton"
+//       data-sidebar="menu-skeleton"
+//       className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)}
+//       {...props}
+//     >
+//       {showIcon && (
+//         <Skeleton
+//           className="size-4 rounded-md"
+//           data-sidebar="menu-skeleton-icon"
+//         />
+//       )}
+//       <Skeleton
+//         className="h-4 max-w-(--skeleton-width) flex-1"
+//         data-sidebar="menu-skeleton-text"
+//         style={
+//           {
+//             "--skeleton-width": width,
+//           } as React.CSSProperties
+//         }
+//       />
+//     </div>
+//   )
+// }
 
 function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
   return (
@@ -714,7 +774,7 @@ export {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
+  // SidebarMenuSkeleton,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,

@@ -1,9 +1,10 @@
 import sanitizeHtml from "sanitize-html"
 
 export function processSvg(svgText: string) {
-    let cleanSvg = sanitizeHtml(svgText, {
+    return sanitizeHtml(svgText, {
         allowedTags: [
             "svg",
+            "g",
             "path",
             "circle",
             "rect",
@@ -11,36 +12,65 @@ export function processSvg(svgText: string) {
             "polyline",
             "polygon",
             "ellipse",
-            "g",
+
+            "defs",
+            "style",
+            "clipPath",
+            "mask",
+            "linearGradient",
+            "radialGradient",
+            "stop",
+            "use",
+            "symbol",
+
+            "title",
+            "desc",
         ],
 
         allowedAttributes: {
-            svg: [
-                "viewBox",
-                "xmlns",
-                "fill",
-                "stroke",
-                "stroke-width",
-            ],
+            "*": [
+                "id",
+                "class",
 
-            path: [
-                "d",
                 "fill",
                 "stroke",
                 "stroke-width",
                 "stroke-linecap",
                 "stroke-linejoin",
+
                 "fill-rule",
                 "clip-rule",
+
+                "opacity",
+                "fill-opacity",
+                "stroke-opacity",
+
+                "transform",
+
+                "clip-path",
+                "mask",
+
+                "href",
+                "xlink:href",
+            ],
+
+            svg: [
+                "xmlns",
+                "viewBox",
+                "width",
+                "height",
+                "fill",
+                "stroke",
+            ],
+
+            path: [
+                "d",
             ],
 
             circle: [
                 "cx",
                 "cy",
                 "r",
-                "fill",
-                "stroke",
-                "stroke-width",
             ],
 
             rect: [
@@ -50,34 +80,21 @@ export function processSvg(svgText: string) {
                 "height",
                 "rx",
                 "ry",
-                "fill",
-                "stroke",
-                "stroke-width",
             ],
 
             line: [
                 "x1",
-                "x2",
                 "y1",
+                "x2",
                 "y2",
-                "stroke",
-                "stroke-width",
-                "stroke-linecap",
-                "stroke-linejoin",
             ],
 
             polyline: [
                 "points",
-                "fill",
-                "stroke",
-                "stroke-width",
             ],
 
             polygon: [
                 "points",
-                "fill",
-                "stroke",
-                "stroke-width",
             ],
 
             ellipse: [
@@ -85,39 +102,68 @@ export function processSvg(svgText: string) {
                 "cy",
                 "rx",
                 "ry",
-                "fill",
-                "stroke",
-                "stroke-width",
             ],
 
-            g: [
-                "fill",
-                "stroke",
-                "stroke-width",
-                "fill-rule",
-                "clip-rule",
+            linearGradient: [
+                "id",
+                "x1",
+                "x2",
+                "y1",
+                "y2",
+                "gradientUnits",
+                "gradientTransform",
+            ],
+
+            radialGradient: [
+                "id",
+                "cx",
+                "cy",
+                "r",
+                "fx",
+                "fy",
+                "gradientUnits",
+                "gradientTransform",
+            ],
+
+            stop: [
+                "offset",
+                "stop-color",
+                "stop-opacity",
+            ],
+
+            clipPath: [
+                "id",
+                "clipPathUnits",
+            ],
+
+            mask: [
+                "id",
+                "x",
+                "y",
+                "width",
+                "height",
+                "maskUnits",
+                "maskContentUnits",
+            ],
+
+            use: [
+                "href",
+                "xlink:href",
+                "x",
+                "y",
+                "width",
+                "height",
+            ],
+
+            symbol: [
+                "id",
+                "viewBox",
             ],
         },
+
+        parser: {
+            lowerCaseTags: false,
+            lowerCaseAttributeNames: false,
+        },
     })
-
-    // Add viewBox if the uploaded SVG doesn't have one
-    const hasViewBox = /viewBox=/i.test(cleanSvg)
-
-    if (!hasViewBox) {
-        cleanSvg = cleanSvg.replace(
-            /<svg([^>]*)>/i,
-            '<svg$1 viewBox="0 0 16 16">'
-        )
-    }
-
-    return cleanSvg
-        .replace(/\s(width|height)="[^"]*"/gi, "")
-        .replace(
-            /\s(fill|stroke)="(?!none)[^"]*"/gi,
-            ' $1="currentColor"'
-        )
-        .replace(
-            /\sstyle="[^"]*"/gi,
-            ""
-        )
 }

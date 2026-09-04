@@ -1,19 +1,18 @@
-"use client"
-import { Button } from "@/components/ui/button";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/myComponent/AppSidebar";
-import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Toaster } from "sonner";
+import { getCurrentUser } from "@/lib/auth";
 
 
-export default function PanelLayout({
+export default async function PanelLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
 
-    const [open, setOpen] = useState(true)
+
+    const currentUser = await getCurrentUser()
 
     return (
         <SidebarProvider dir="rtl">
@@ -22,7 +21,7 @@ export default function PanelLayout({
                 <AppSidebar />
                 <div className="w-full">
 
-                    <SidebarTrigger/>
+                    <SidebarTrigger userRole= {currentUser?.userRole}/>
                     {children}
                     <Toaster />
                 </div>
