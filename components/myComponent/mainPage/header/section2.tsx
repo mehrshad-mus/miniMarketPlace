@@ -20,6 +20,7 @@ type cartForCartItemCount = CartGetPayload<{
         }
     }
 }>
+
 const Section2 = ({ user, cartItemCount }: {
     user: User | null | undefined,
     cartItemCount: cartForCartItemCount | null | undefined
@@ -38,24 +39,24 @@ const Section2 = ({ user, cartItemCount }: {
     const [loginHover, setLoginHover] = useState(false)
 
     return (
-        <div className="flex justify-between items-center flex-row-reverse px-10 pl-12 bg-white dark:bg-gray-900">
+        <div dir='rtl' className="flex items-center justify-between gap-4 border-b border-slate-100/80 bg-white/95 px-4 py-2.5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-gray-950/95 sm:px-8 lg:px-12">
 
-            <div className="flex justify-center items-center flex-row-reverse gap-10">
-                <div>
-                    <Image src={"/ChatGPT Image Aug 5, 2026, 12_55_03 PM.png"} alt="shop logo" className='block dark:hidden' width={100} height={100} />
-                    <Image src={"/paras_shop_logo_darktheme_v5.png"} alt="shop logo" className='hidden dark:block' width={100} height={100} />
+            <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-8 lg:gap-12">
+                <div className="shrink-0">
+                    <Image src={"/ChatGPT Image Aug 5, 2026, 12_55_03 PM.png"} alt="shop logo" className='block h-auto w-16 dark:hidden sm:w-20' width={100} height={100} />
+                    <Image src={"/paras_shop_logo_darktheme_v5.png"} alt="shop logo" className='hidden h-auto w-16 dark:block sm:w-20' width={100} height={100} />
                 </div>
 
-                <div>
-                    <div dir="rtl" className="flex h-12 w-180 items-center justify-between rounded-xl bg-gray-200 dark:bg-gray-600 px-2 relative">
+                <div className="min-w-0 flex-1">
+                    <div dir="rtl" className="relative flex h-11 w-full max-w-3xl items-center justify-between rounded-2xl border border-slate-200 bg-slate-100/80 px-1.5 transition focus-within:border-red-300 focus-within:bg-white focus-within:shadow-lg focus-within:shadow-red-100 dark:border-slate-700 dark:bg-slate-800/80 dark:focus-within:border-red-700 dark:focus-within:bg-slate-800 dark:focus-within:shadow-red-950/30">
                         <input
                             type="text"
                             placeholder=" جستجو سراسری... "
-                            className="w-4/5 bg-transparent text-right placeholder:text-gray-400 outline-none border-2 h-full border-none"
+                            className="h-full min-w-0 flex-1 bg-transparent px-3 text-right text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
                             onFocus={() => setSearchPanel(true)}
                             onBlur={() => setSearchPanel(false)}
                         />
-                        <span className="text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-100 p-3 rounded-xl">
+                        <span className="rounded-xl bg-white p-2.5 text-slate-500 shadow-sm dark:bg-slate-700 dark:text-slate-100">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="16"
@@ -68,7 +69,7 @@ const Section2 = ({ user, cartItemCount }: {
                         </span>
 
                         {searchPanel && (
-                            <div className={`absolute top-16 right-0 w-180 bg-gray-100 dark:bg-gray-600 shodow rounded-xl shadow-lg p-4`}>
+                            <div className={`absolute right-0 top-14 z-30 w-full max-w-3xl rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800`}>
                                 <div className="flex gap-2 items-center jucbtify-center">
                                     <span>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-eye" viewBox="0 0 16 16">
@@ -159,7 +160,7 @@ const Section2 = ({ user, cartItemCount }: {
                 </div>
             </div>
 
-            <div className="flex justify-center items-center gap-5">
+            <div dir='rtl' className="flex shrink-0 items-center gap-2 sm:gap-4">
                 {user ? <div className='flex justify-center items-center gap-5'>
                     <Link href={"/cart"} className='hover:text-red-600 relative z-0' onMouseEnter={() => setCartColor(true)} onMouseLeave={() => setCartColor(false)}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-cart2" viewBox="0 0 16 16">

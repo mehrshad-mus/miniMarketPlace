@@ -24,6 +24,7 @@ export default function ProductSection(
         }) {
 
     const [searchTitle, setSearchTitle] = useState('')
+    
     const userRole = useContext(UserProduct)
 
     const dataForTable = data?.products?.map((item) => {

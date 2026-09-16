@@ -23,8 +23,10 @@ export default function OfferSection({ productId, editOffer, title, mutaionKey, 
         mutaionKey: string[],
         invalidations: string[],
     }) {
+
     const queryClient = useQueryClient();
     const router = useRouter()
+
     const {
         register,
         handleSubmit,
@@ -47,7 +49,7 @@ export default function OfferSection({ productId, editOffer, title, mutaionKey, 
         mutationFn: mode === "create" ? offer.createOffer : offer.updateOffer,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: invalidations })
-            router.push(`/admin/offers`)
+            router.push(`/${currentUser?.role}/offers`)
             toast.success("با موفقیت تغییر کرد", {
                 position: "bottom-left", style: {
                     background: "#98e897",

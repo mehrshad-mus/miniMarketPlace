@@ -2,7 +2,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Spinner from "./Spinner "
 
-export const ProductImage = ({ src , width , height }: { src: string , width?: number , height ?: number}) => {
+export const ProductImage = ({ src , width , height ,alt }: { src: string , width?: number , height ?: number , alt ?: string}) => {
     const [loading, setLoading] = useState(true)
 
     return (

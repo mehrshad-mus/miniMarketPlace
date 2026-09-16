@@ -386,9 +386,19 @@ export const NavItems = ({ data }: { data: User | undefined }) => {
         },
         {
             name: "استوری ها",
-            url: "/sidebarItem-two",
+            url: `/admin/story`,
             permission: ["admin"],
-            // icon: () => <div></div>
+            icon: (isPathNameIncludeURL: boolean) => {
+                return (
+                    <span className={`${isPathNameIncludeURL && navTextColor({ user: data })}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-clock-history" viewBox="0 0 16 16">
+                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z" />
+                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z" />
+                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5" />
+                        </svg>
+                    </span>
+                )
+            }
         },
         {
             name: "عملیات مجله",
@@ -484,8 +494,18 @@ export const NavItems = ({ data }: { data: User | undefined }) => {
         },
         {
             name: "علاقه مندی ها",
-            permission: ["user"],
-            url: "/sdfdfs"
+            permission: ["admin", "seller", "user"],
+            url: `/${data?.role.toLowerCase()}/favorite`,
+            icon: (isPathNameIncludeURL: boolean) => {
+                return (
+                    <span className={`${isPathNameIncludeURL && navTextColor({ user: data })}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-bookmark-heart" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M8 4.41c1.387-1.425 4.854 1.07 0 4.277C3.146 5.48 6.613 2.986 8 4.412z" />
+                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z" />
+                        </svg>
+                    </span>
+                )
+            }
         },
         {
             name: "نشانی ها",
@@ -494,13 +514,21 @@ export const NavItems = ({ data }: { data: User | undefined }) => {
         },
         {
             name: "نظرات شما",
-            permission: ["user"],
-            url: "fsdff"
+            permission: ["admin", "seller", "user"],
+            url: `/${data?.role.toLocaleLowerCase()}/comment`,
+            icon: (isPathNameIncludeURL: boolean) => {
+                return <span className={`${isPathNameIncludeURL && navTextColor({ user: data })}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-chat-dots" viewBox="0 0 16 16">
+                        <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+                        <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2" />
+                    </svg>
+                </span>
+            }
         },
         {
             name: "بازدید های اخیر",
-            permission: ["user"],
-            url: "fsdff"
+            permission: ["admin", "seller", "user"],
+            url: "fsdff",
         },
         {
             name: "فروشنده شوید !",

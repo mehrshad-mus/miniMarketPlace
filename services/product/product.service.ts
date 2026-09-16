@@ -217,6 +217,15 @@ export async function getProductByIdForUser({ productId }: { productId: string }
                         }
                     }
                 }
+            },
+
+            comment: {
+                include: {
+                    user: true,
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
             }
         }
 

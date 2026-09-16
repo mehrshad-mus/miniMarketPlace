@@ -12,7 +12,7 @@ export const SellerProductSection = () => {
     const createOfferBySeller = useRef<HTMLDialogElement>(null)
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["product"],
+        queryKey: ["product3"],
         queryFn: () => product.getAllProduct({ currentPage: 1 })
     })
 

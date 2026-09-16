@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProductVariantGetPayload } from '@/app/generated/prisma/models'
 import { Button } from '@/components/ui/button'
 import { cart } from '@/lib/queries'
@@ -39,36 +38,36 @@ const AddToChart = (
 
     const [offersPanel, setOffersPanel] = useState(false)
     return (
-        <div className="flex flex-col justify-start items-end w-100 h-full px-5 py-2">
+        <div className="flex flex-col justify-start items-end w-100 h-full px-4 py-3 text-slate-900">
 
-            <div className="flex flex-col justify-start items-end w-full px-5 py-4 bg-gray-100 rounded-2xl">
-                <div className="flex justify-between items-center w-full" >
+            <div className="flex flex-col justify-start items-end w-full gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm" dir="rtl">
+                <div className="flex justify-between items-center w-full">
+                    <span className="text-sm font-medium text-slate-500">فروشنده</span>
                     {sellerSize &&
-                        <span className="text-blue-600 font-bold text-xs cursor-pointer" dir="rtl">
-                            {sellerSize.toLocaleString("fa-IR")} دو فروشنده
+                        <span className="cursor-pointer text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700">
+                            {sellerSize.toLocaleString("fa-IR")}  فروشنده
                         </span>}
-                    <span className="text-[16px] ">: فروشنده</span>
                 </div>
 
-                <div className="flex justify-start items-center gap-6 mt-2">
+                <div className="flex w-full items-center justify-start gap-3">
                     {chosenOffer &&
-                        <span className="p-1 px-2 rounded-2xl text-gray-600 bg-gray-300 text-xs">
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
                             {chosenOffer.seller.storeName === "Khalij Fars" ? "فروشگاه اصلی" : chosenOffer.seller.name}
                         </span>}
-                    <span className="font-bold">{chosenOffer && chosenOffer.seller.storeName}</span>
+                    <span className="font-semibold text-slate-800">{chosenOffer && chosenOffer.seller.storeName}</span>
                 </div>
 
-                <div className="flex justify-center items-end flex-col w-full mt-4 gap-2">
-                    <span>:شناسه محصول</span>
-                    <span className="font-bold text-xs w-1/2 truncate">{data?.product.id}</span>
+                <div className="flex w-full flex-col items-start justify-center gap-1 border-t border-slate-100 pt-3">
+                    <span className="text-xs font-medium text-slate-500">شناسه محصول</span>
+                    <span className="w-1/2 truncate font-mono text-xs text-slate-700">{data?.product.id}</span>
                 </div>
             </div>
 
-            <div className="flex justify-start items-start flex-col w-full border-t mt-4">
-                <div className="flex justify-between items-center w-full mt-4 gap-2" dir="rtl">
+            <div className="flex w-full flex-col items-start justify-start border-t border-slate-200 pt-5">
+                <div className="flex w-full items-center justify-between gap-3" dir="rtl">
 
-                    <div className="flex justify-center items-center gap-1 bg-gray-200 py-1 rounded-xl">
-                        <Button onClick={() => {
+                    <div className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                        <Button aria-label="افزایش تعداد" onClick={() => {
                             if (orderCount === chosenOffer?.stock) {
                                 toast.success("حداکثر تعداد موجودی میباشد", {
                                     position: "bottom-left",
@@ -86,9 +85,9 @@ const AddToChart = (
                             }
                             setOrderCount((prev) => prev + 1)
 
-                        }} className="text-2xl w-4 text-gray-600">+</Button>
-                        <span className="bg-white py-1 px-2 w-16 text-center rounded-lg">{orderCount.toLocaleString("fa-IR")}</span>
-                        <Button onClick={() => {
+                        }} className="h-8 w-8 rounded-lg text-xl text-slate-600 hover:bg-white hover:text-slate-900">+</Button>
+                        <span className="w-12 rounded-lg bg-white py-1.5 text-center text-sm font-semibold text-slate-800 shadow-sm">{orderCount.toLocaleString("fa-IR")}</span>
+                        <Button aria-label="کاهش تعداد" onClick={() => {
                             if (orderCount === 1) {
                                 toast.success("حداقل تعداد سفارش ۱ است", {
                                     position: "bottom-left",
@@ -106,21 +105,21 @@ const AddToChart = (
                             }
 
                             setOrderCount((prev) => prev - 1)
-                        }} className="text-2xl w-4 text-gray-600">-</Button>
+                        }} className="h-8 w-8 rounded-lg text-xl text-slate-600 hover:bg-white hover:text-slate-900">-</Button>
                     </div>
 
-                    <div className="flex justify-center items-center gap-2 flex-col">
+                    <div className="flex flex-col items-end justify-center gap-1">
 
-                        <div className="flex justify-center items-center gap-2">
-                            <span className="text-[15px] text-red-600 font-bold"><del>{chosenOffer && chosenOffer.price.toLocaleString("fa-IR")}</del></span>
-                            <span className="rounded-t-lg rounded-br-lg  px-1 py-1 font-bold bg-red-600 text-white text-xs"><span className="text-black">%</span> {chosenOffer && chosenOffer.discount.toLocaleString("fa-IR")}</span>
+                        <div className="flex items-center justify-center gap-2">
+                            <span className="text-xs font-medium text-slate-400"><del>{chosenOffer && chosenOffer.price.toLocaleString("fa-IR")}</del></span>
+                            <span className="rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-600"><span className="text-red-400">%</span> {chosenOffer && chosenOffer.discount.toLocaleString("fa-IR")}</span>
                         </div>
 
-                        <div className="flex justify-center items-center gap-2">
+                        <div className="flex items-baseline justify-center gap-2">
                             <span>
-                                {chosenOffer && <span className="font-bold text-[22px]">{((chosenOffer.price * (100 - chosenOffer.discount) / 100) * orderCount).toLocaleString("fa-IR")}</span>}
+                                {chosenOffer && <span className="text-2xl font-bold tracking-tight text-slate-900">{((chosenOffer.price * (100 - chosenOffer.discount) / 100) * orderCount).toLocaleString("fa-IR")}</span>}
                             </span>
-                            <span className="text-[10px] text-gray-600 px-1 py-0.5 rounded-lg bg-gray-200">تومان</span>
+                            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">تومان</span>
 
                         </div>
 
@@ -128,26 +127,26 @@ const AddToChart = (
 
                 </div>
 
-                <div className="relative flex justify-center items-center bg-gray-200 cursor-pointer text-xs rounded-xl mt-6">
+                <div className="relative mt-6 flex w-full justify-center rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-600">
 
-                    <div className="flex justify-around items-center px-3 py-1 gap-2" onClick={() => setOffersPanel((prev) => !prev)}>
+                    <div className="flex w-full cursor-pointer items-center justify-center gap-2 px-3 py-2.5 transition-colors hover:text-slate-900" onClick={() => setOffersPanel((prev) => !prev)}>
                         <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className={`transition-all duration-500 ease-in-out ${offersPanel ? "rotate-180" : "rotate-0"}`} viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className={`transition-transform duration-300 ${offersPanel ? "rotate-180" : "rotate-0"}`} viewBox="0 0 16 16">
                                 <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659" />
                             </svg>
                         </span>
-                        <span className="text-gray-800">مشاهده پیشنهاد های دیگر</span>
+                        <span>مشاهده پیشنهادهای دیگر</span>
                     </div>
 
 
-                    <div className={`bg-white  absolute py-3 top-6 transition-all duration-500 ease-in-out ${offersPanel ? "opacity-100" : "opacity-0"}`}>
+                    <div className={`absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg transition-all duration-300 ${offersPanel ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0"}`}>
                         {variant?.offer.map((off) => {
                             return (
                                 <Button
-                                    key={off.id} className="flex justify-between items-center gap-6 mt-2 w-full bg-white hover:bg-gray-100"
+                                    key={off.id} className="mt-0 flex w-full items-center justify-between gap-6 rounded-none bg-white px-4 py-2.5 text-slate-700 hover:bg-slate-50"
                                     onClick={() => setChosenOffer(off)}>
-                                    <span>{off.price.toLocaleString("fa-IR")}</span>
-                                    <span className="text-xs">{off.seller.storeName}</span>
+                                    <span className="font-semibold">{off.price.toLocaleString("fa-IR")} <span className="text-[10px] font-normal text-slate-400">تومان</span></span>
+                                    <span className="text-xs text-slate-500">{off.seller.storeName}</span>
                                 </Button>
                             )
                         })}
@@ -155,12 +154,9 @@ const AddToChart = (
 
                 </div>
 
-                <div className="flex items-center justify-center w-full mt-6">
+                <div className="mt-6 flex w-full items-center justify-center">
                     <Button
-                        className="bg-linear-to-br from-red-700 via-red-600 to-red-400 text-white w-full h-10 text-lg 
-                     hover:from-red-600 hover:via-red-900 hover:to-red-700
-                    shadow-[0_0_10px_#dc2626] transition-all duration-300
-                     "
+                        className="h-11 w-full rounded-xl bg-red-700 text-base font-semibold text-white shadow-sm transition-all duration-300 hover:bg-red-600 hover:shadow-lg hover:shadow-red-600/20"
                      onClick={() => mutate({offer: chosenOffer, quantity : orderCount})}>
                        {isPending ? <Spinner/> : " افزودن به سبد خرید"}
                     </Button>

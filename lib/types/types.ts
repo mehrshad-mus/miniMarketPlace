@@ -62,6 +62,7 @@ type CartItemPayload = CartItemGetPayload<{
         }
     }
 }>
+
 export type cartItemType = Omit<CartItemPayload , "price"> & {
     price: number;
 }
@@ -77,6 +78,11 @@ export type productWithBrandAndCategory = ProductGetPayload<{
         brand: true,
         category: true,
         productImage: true,
+        comment: {
+            include: {
+                user: true,
+            },
+        },
         productOption: {
             include: {
                 productOptionValues: true,
@@ -131,3 +137,11 @@ export type SidebarSubItem = {
     permission: string[];
     url: string;
 };
+
+export type ReviewData = {
+    rating: number
+    strengths: string
+    weaknesses: string
+    content: string
+    recommend: boolean
+}

@@ -1,6 +1,4 @@
 import { getCurrentUser } from "@/lib/auth";
-import { accessRole } from "@/lib/constant/enums";
-import { prisma } from "@/lib/prisma";
 import { OfferField, offerSchema, schema } from "@/lib/zodSchema/schema";
 import { createOffer, deleteOffer, getAllOffer, updateOffer } from "@/services/offer/offer.service";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,15 +15,16 @@ export async function GET(request: NextRequest) {
         const currentPage = searchParams.get("currentPage")
         const productId = searchParams.get("productId")
 
-        const { productWithOffers: productOfferWithImage, totalCount } = await getAllOffer(
+        const { offers ,totalCount} = await getAllOffer(
             {
                 sellerId: sellerId ,
                 productId: productId,
                 currentPage: currentPage
             })
+        
 
 
-        return NextResponse.json({ products: productOfferWithImage, totalCount }, { status: 200 })
+        return NextResponse.json({ products: offers, totalCount }, { status: 200 })
 
     } catch (error) {
         console.error(error)

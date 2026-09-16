@@ -21,7 +21,7 @@ type AutoSliderType = {
 const AutoSlider = () => {
 
     const { data, isLoading } = useQuery({
-        queryKey: ["product"],
+        queryKey: ["product4"],
         queryFn: () => extraQueryis.getTenProductForAutoSlider()
     })
 

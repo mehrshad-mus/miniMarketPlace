@@ -6,7 +6,7 @@ import { s3 } from "@/lib/s3Client";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-export async function getAllOffer({sellerId , productId , currentPage} :
+export async function getAllOffer({ sellerId, productId, currentPage }:
     {
         sellerId: string | null,
         productId: string | null,
@@ -27,6 +27,7 @@ export async function getAllOffer({sellerId , productId , currentPage} :
 
     const pageNumber = Number(currentPage)
     const skipPages = 5 * (pageNumber - 1)
+
     const totalCount = await prisma.product.count({
         where: {
             productVariant: {
@@ -41,7 +42,86 @@ export async function getAllOffer({sellerId , productId , currentPage} :
         },
     })
 
+    if (sellerId) {
+        console.log("run")
+        const productWithOffers = await prisma.product.findMany({
+            where: {
+                productVariant: {
+                    some: {
+                        offer: {
+                            some: {
+                                sellerId: existingSeller.id
+                            }
+                        }
+                    }
+                }
+            },
+
+            skip: skipPages,
+            take: 5,
+
+            orderBy: {
+                createdAt: "desc"
+            },
+
+            include: {
+                productImage: true,
+                brand: true,
+                category: true,
+
+                productVariant: {
+                    where: {
+                        offer: {
+                            some: {
+                                sellerId: existingSeller.id
+                            }
+                        }
+                    },
+
+                    include: {
+                        offer: {
+                            where: {
+                                sellerId: existingSeller.id
+                            },
+
+                            include: {
+                                seller: true
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        console.log(productWithOffers)
+
+        const productOfferWithImage = await Promise.all(
+            productWithOffers.map(async (product) => {
+                return {
+                    ...product,
+                    productImage: await Promise.all(
+                        product.productImage.map(async (image) => {
+                            return {
+                                ...image,
+                                url: await getSignedUrl(
+                                    s3,
+                                    new GetObjectCommand({
+                                        Bucket: process.env.S3_BUCKET_NAME!,
+                                        Key: image.url,
+                                    }),
+                                    { expiresIn: 3600 } // 1 hour
+                                ),
+                            }
+                        })
+                    )
+                }
+            }))
+
+        return { offers: productOfferWithImage, totalCount: Math.ceil(totalCount / 5) }
+    }
+
     if (productId) {
+        console.log("run2")
         const productWithOfferById = await prisma.product.findUnique({
             where: { id: productId },
             include: {
@@ -78,8 +158,10 @@ export async function getAllOffer({sellerId , productId , currentPage} :
             throw new Error("cant find it")
         }
 
-        return { productWithOffers: [productWithOfferById] }
+        return { offers: [productWithOfferById] }
     }
+
+    console.log("run3")
 
     const productWithOffers = await prisma.product.findMany({
         where: {
@@ -135,7 +217,7 @@ export async function getAllOffer({sellerId , productId , currentPage} :
                 )
             }
         }))
-    
+
     return { offers: productOfferWithImage, totalCount: Math.ceil(totalCount / 5) }
 }
 

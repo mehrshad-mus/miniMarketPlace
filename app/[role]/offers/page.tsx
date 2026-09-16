@@ -19,6 +19,7 @@ const Offers = () => {
     })
 
     const isAdmin = currentUser?.role === "ADMIN"
+
     const { data, isLoading, error } = useQuery({
         queryKey: ["productt", currentPage, offers],
         queryFn: () => product.getAllProduct({ currentPage, offers }),
@@ -30,6 +31,8 @@ const Offers = () => {
         queryFn: () => offer.getAllOffer({sellerId: currentUser?.id, currentPage}),
         enabled:  !!currentUser?.id && !isAdmin,
     })
+
+    console.log(sellerOfferData)
 
     // console.log(sellerOfferData)
 

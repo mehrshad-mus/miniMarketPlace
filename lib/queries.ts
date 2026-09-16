@@ -1,7 +1,7 @@
 import { SellerRequest, User } from "@/app/generated/prisma/client";
 import { errorHandler } from "./utils";
 import { dialogProps, categoryType, FormFields, OfferField, ProfileFields, StoreRequestFields } from "./zodSchema/schema";
-import { cartType, offerType, productRequestType, productWithBrandAndCategory } from "./types/types";
+import { cartType, offerType, productRequestType, productWithBrandAndCategory, ReviewData } from "./types/types";
 import { getSellerProductRequestCount, getSellerRequestCount } from "@/lib/actions/getCounts";
 import { changeAdminStatuSellerRequest } from "./actions/AdminStatusSellerRequest";
 import { rejectSellerRequestFn } from "./actions/rejectSellerRequest";
@@ -937,6 +937,131 @@ export const payment = {
     }
 }
 
+export const comment = {
+    getAll: async () => {
+        const res = await fetch("/api/comment")
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { comments } = await res.json()
+        return comments
+    },
+
+    createComment : async({commentData , productId} : {commentData : ReviewData, productId: string | undefined}) => {
+
+        const res = await fetch("/api/comment" , {
+            method: "PUT",
+            headers : {"Content-Type" : "application/json"},
+            body : JSON.stringify({commentData, productId})
+        })
+
+        if(!res.ok){
+            const {message} = await res.json()
+            throw new Error(message)
+        }
+
+        const {message} = await res.json()
+        return message
+    },
+
+    remove: async ({ commentId }: { commentId: string }) => {
+        const res = await fetch("/api/comment", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ commentId }),
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        const { message } = await res.json()
+        return message
+    }
+}
+
+export const favorite = {
+    getAll: async () => {
+        const res = await fetch("/api/favorite");
+        await errorHandler(res);
+
+        const { favorites } = await res.json();
+        return favorites;
+    },
+
+    addTofavorite : async({productId} : {productId : string | undefined}) => {
+        const res = await fetch("/api/favorite" , {
+            method : "PUT",
+            headers : {"Content-Type" : "application/json"},
+            body : JSON.stringify({productId})
+        })
+
+        if(!res.ok){
+            const {message} = await res.json()
+            throw new Error(message)
+        }
+
+        const {message} = await res.json()
+        return message
+    },
+
+    remove: async ({ favoriteId }: { favoriteId: string }) => {
+        const res = await fetch("/api/favorite", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ favoriteId }),
+        });
+
+        await errorHandler(res);
+        const { message } = await res.json();
+        return message;
+    }
+}
+
+export const story = {
+    create: async ({ title, content, file,}: {
+        title: string
+        content: string
+        file: File
+    }) => {
+        const formData = new FormData()
+        formData.append("title", title)
+        formData.append("content", content)
+        formData.append("file", file)
+
+        const res = await fetch("/api/story", {
+            method: "POST",
+            body: formData,
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        return res.json()
+    },
+
+    markViewed: async (storyId: string) => {
+        const res = await fetch("/api/story/view", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ storyId }),
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        return res.json()
+    },
+}
+
 export const extraQueryis = {
 
     getRequestCountForStore: async () => {
@@ -963,4 +1088,3 @@ export const extraQueryis = {
         return message
     }
 }
-

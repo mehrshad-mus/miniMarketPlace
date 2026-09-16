@@ -53,9 +53,10 @@ model User {
   comments       Comment[]
   recentViews    RecentView[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  payments  Payment[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  payments   Payment[]
+  storyViews StoryView[]
 }
 
 model Seller {
@@ -276,8 +277,8 @@ model Comment {
   id             String  @id @default(uuid())
   content        String
   rate           Int
-  weacness       String?
-  Strength       String?
+  weakness       String?
+  strength       String?
   recommendation Boolean
 
   userId String
@@ -289,7 +290,6 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, productId])
   @@index([productId])
 }
 
@@ -603,13 +603,31 @@ model CommenQuestion {
 }
 
 model Story {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   title    String
   content  String
-  imageUrl String
+  imageUrl String?
+  videoUrl String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  storyViews StoryView[]
+}
+
+model StoryView {
+  id String @id @default(uuid())
+
+  storyId String
+  userId  String
+
+  viewedAt DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@index([storyId])
+  @@index([userId])
 }
 
 enum RequestStatus {
