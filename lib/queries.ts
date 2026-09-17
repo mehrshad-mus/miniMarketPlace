@@ -125,6 +125,7 @@ export const seller = {
 
 export const userProfileData = async () => {
     const res = await fetch(`/api/user?userId=${"currentUser"}`)
+    await new Promise((resolve) => {setTimeout(resolve,2000)})
 
     const { currentUser, message }: { currentUser: User, message: string } = await res.json()
 
@@ -449,6 +450,30 @@ export const product = {
         const { products, totalCount }: { products: productWithBrandAndCategory[], totalCount: number } = await res.json()
 
         return { products, totalCount }
+    },
+
+    search: async (query: string) => {
+        const params = new URLSearchParams();
+        params.set("search", query);
+
+        const res = await fetch(`/api/product?${params}`);
+
+        if (!res.ok) {
+            const { message } = await res.json();
+            throw new Error(message);
+        }
+
+        const { products } = await res.json() as { products: {
+            id: string;
+            title: string;
+            brandName: string;
+            imageUrl: string | null;
+            imageAlt: string;
+            price: number | null;
+            discount: number;
+        }[] };
+
+        return products;
     },
 
     getProductForUser: async ({ productId }: { productId: string }) => {
@@ -1046,6 +1071,21 @@ export const story = {
         return res.json()
     },
 
+    remove: async (storyId: string) => {
+        const res = await fetch("/api/story", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ storyId }),
+        })
+
+        if (!res.ok) {
+            const { message } = await res.json()
+            throw new Error(message)
+        }
+
+        return res.json()
+    },
+    
     markViewed: async (storyId: string) => {
         const res = await fetch("/api/story/view", {
             method: "POST",

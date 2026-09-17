@@ -3,6 +3,7 @@ import AppSidebar from "@/components/myComponent/AppSidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Toaster } from "sonner";
 import { getCurrentUser } from "@/lib/auth";
+import AppSidebarServer from "@/components/myComponent/AppSidebarServer";
 
 
 export default async function PanelLayout({
@@ -18,7 +19,7 @@ export default async function PanelLayout({
         <SidebarProvider dir="rtl">
             <section className="flex justify-between w-full">
                 
-                <AppSidebar />
+                <AppSidebarServer/>
                 <div className="w-full">
 
                     <SidebarTrigger userRole= {currentUser?.userRole}/>

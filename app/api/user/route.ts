@@ -14,10 +14,12 @@ export async function GET(request: NextRequest) {
         const searchPhone = searchParams.get('search')
         const userId = searchParams.get("userId")
 
+        console.log("searchParams", searchParams)
+
         if (userId) {
             const user = await getCurrentUser()
 
-            console.log(user)
+            console.log("useris" , user)
 
             if (!user) return NextResponse.json({ message: "user dosent exist...!" }, { status: 401 })
             const currentUser = await prisma.user.findUnique({ where: { id: user?.userId } })

@@ -1,6 +1,6 @@
 import { FormFields, schema } from "@/lib/zodSchema/schema";
 import { NextRequest, NextResponse } from "next/server";
-import { createProduct, deleteProduct, getAllProduct, getProductByIdForUser, updateProduct } from "@/services/product/product.service";
+import { createProduct, deleteProduct, getAllProduct, getProductByIdForUser, searchProductsForUser, updateProduct } from "@/services/product/product.service";
 
 
 export async function GET(request: NextRequest) {
@@ -11,6 +11,16 @@ export async function GET(request: NextRequest) {
         const currentPage = searchParams.get("page");
         const productId = searchParams.get("id");
         const offers = searchParams.get("offers");
+        const search = searchParams.get("search");
+
+        if (search !== null) {
+            if (search.trim().length > 80) {
+                return NextResponse.json({ message: "عبارت جست‌وجو بیش از حد طولانی است" }, { status: 400 })
+            }
+
+            const products = await searchProductsForUser(search)
+            return NextResponse.json({ products }, { status: 200 })
+        }
 
         const productForUser = searchParams.get("productForUser");
         if(productForUser){

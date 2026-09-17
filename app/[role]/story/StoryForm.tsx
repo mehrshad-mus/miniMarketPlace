@@ -4,7 +4,7 @@ import Spinner from "@/components/myComponent/Spinner "
 import { story } from "@/lib/queries"
 import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { ChangeEvent, FormEvent, useState } from "react"
+import { ChangeEvent, DragEvent, FormEvent, useState } from "react"
 import { toast } from "sonner"
 
 const IMAGE_MAX_SIZE = 10 * 1024 * 1024
@@ -17,6 +17,7 @@ export default function StoryForm() {
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
     const [file, setFile] = useState<File | null>(null)
+    const [isDragging, setIsDragging] = useState(false)
 
     const { mutate, isPending } = useMutation({
         mutationKey: ["createStory"],
@@ -33,8 +34,7 @@ export default function StoryForm() {
         },
     })
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = event.target.files?.[0]
+    const selectFile = (selectedFile: File | undefined) => {
         if (!selectedFile) return
 
         const isImage = selectedFile.type.startsWith("image/")
@@ -43,17 +43,38 @@ export default function StoryForm() {
 
         if (!isImage && !isVideo) {
             toast.error("فقط فایل تصویری یا ویدیویی مجاز است")
-            event.target.value = ""
             return
         }
 
         if (selectedFile.size > maxSize) {
             toast.error(isImage ? "حجم عکس نباید بیشتر از ۱۰ مگابایت باشد" : "حجم ویدیو نباید بیشتر از ۵۰ مگابایت باشد")
-            event.target.value = ""
             return
         }
 
         setFile(selectedFile)
+    }
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        selectFile(event.target.files?.[0])
+        event.target.value = ""
+    }
+
+    const handleDragOver = (event: DragEvent<HTMLLabelElement>) => {
+        event.preventDefault()
+        event.dataTransfer.dropEffect = "copy"
+        setIsDragging(true)
+    }
+
+    const handleDragLeave = (event: DragEvent<HTMLLabelElement>) => {
+        if (event.currentTarget === event.target) {
+            setIsDragging(false)
+        }
+    }
+
+    const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
+        event.preventDefault()
+        setIsDragging(false)
+        selectFile(event.dataTransfer.files[0])
     }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -94,17 +115,38 @@ export default function StoryForm() {
                 />
             </label>
 
-            <label className="block cursor-pointer rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center transition hover:border-blue-300 hover:bg-red-50/30">
-                <span className="text-sm font-semibold text-slate-700">انتخاب عکس یا ویدیو</span>
-                <span className="mt-2 block text-xs text-slate-400">عکس تا ۱۰MB، ویدیو تا ۵۰MB</span>
-                <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
-                    onChange={handleFileChange}
-                    className="sr-only"
-                />
-                {file && <span className="mt-3 block truncate text-xs font-medium text-red-500">{file.name}</span>}
-            </label>
+            <details className="group rounded-2xl border border-slate-200 bg-slate-50">
+                <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-slate-700">
+                    <span className="flex items-center justify-between">
+                        <span>{file ? "رسانه انتخاب شده" : "انتخاب عکس یا ویدیو"}</span>
+                        <span className="text-xs text-slate-400 transition group-open:rotate-180">⌄</span>
+                    </span>
+                </summary>
+                <label
+                    htmlFor="story-file"
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`mx-4 mb-4 block cursor-pointer rounded-2xl border border-dashed p-5 text-center transition ${
+                        isDragging
+                            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                            : "border-slate-300 bg-white hover:border-blue-300"
+                    }`}
+                >
+                    <span className="text-sm font-semibold text-slate-700">
+                        {isDragging ? "فایل را اینجا رها کنید" : "فایل را اینجا بکشید یا کلیک کنید"}
+                    </span>
+                    <span className="mt-2 block text-xs text-slate-400">عکس تا ۱۰MB، ویدیو تا ۵۰MB</span>
+                    <input
+                        id="story-file"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+                        onChange={handleFileChange}
+                        className="sr-only"
+                    />
+                    {file && <span className="mt-3 block truncate text-xs font-medium text-red-500">{file.name}</span>}
+                </label>
+            </details>
 
             <button
                 type="submit"

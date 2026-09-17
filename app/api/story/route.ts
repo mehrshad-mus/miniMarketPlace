@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth"
-import { createStory, getActiveStories } from "@/services/story/story.service"
+import { createStory, deleteStory, getActiveStories } from "@/services/story/story.service"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET() {
@@ -62,6 +62,30 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
             { message: error instanceof Error ? error.message : "An unknown error occurred" },
             { status: 500 },
+        )
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const currentUser = await getCurrentUser()
+
+        if (!currentUser || currentUser.userRole !== "ADMIN") {
+            return NextResponse.json({ message: "فقط ادمین دسترسی دارد" }, { status: 403 })
+        }
+
+        const { storyId } = await request.json() as { storyId?: string }
+        if (!storyId || typeof storyId !== "string") {
+            return NextResponse.json({ message: "شناسه استوری الزامی است" }, { status: 400 })
+        }
+
+        await deleteStory({ storyId })
+        return NextResponse.json({ message: "استوری با موفقیت حذف شد" })
+    } catch (error) {
+        console.error(error)
+        return NextResponse.json(
+            { message: error instanceof Error ? error.message : "An unknown error occurred" },
+            { status: error instanceof Error && error.message.includes("پیدا نشد") ? 404 : 500 },
         )
     }
 }

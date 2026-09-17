@@ -254,6 +254,75 @@ export async function getProductByIdForUser({ productId }: { productId: string }
 
 }
 
+export async function searchProductsForUser(query: string) {
+    const normalizedQuery = query.trim()
+
+    if (normalizedQuery.length < 2) {
+        return []
+    }
+
+    const products = await prisma.product.findMany({
+        where: {
+            deletedAt: null,
+            OR: [
+                { title: { contains: normalizedQuery, mode: "insensitive" } },
+                { englishTitle: { contains: normalizedQuery, mode: "insensitive" } },
+                { brand: { name: { contains: normalizedQuery, mode: "insensitive" } } },
+            ],
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        select: {
+            id: true,
+            title: true,
+            brand: { select: { name: true } },
+            productImage: {
+                take: 1,
+                orderBy: { createdAt: "asc" },
+                select: { url: true, altText: true },
+            },
+            productVariant: {
+                select: {
+                    offer: {
+                        where: {
+                            status: "ACTIVE",
+                            deletedAt: null,
+                            stock: { gt: 0 },
+                        },
+                        orderBy: { price: "asc" },
+                        take: 1,
+                        select: { price: true, discount: true },
+                    },
+                },
+            },
+        },
+    })
+
+    return Promise.all(products.map(async (product) => {
+        const offer = product.productVariant.flatMap((variant) => variant.offer)[0]
+        const image = product.productImage[0]
+
+        return {
+            id: product.id,
+            title: product.title,
+            brandName: product.brand.name,
+            imageUrl: image
+                ? await getSignedUrl(
+                    s3,
+                    new GetObjectCommand({
+                        Bucket: process.env.S3_BUCKET_NAME!,
+                        Key: image.url,
+                    }),
+                    { expiresIn: 900 },
+                )
+                : null,
+            imageAlt: image?.altText || product.title,
+            price: offer?.price ?? null,
+            discount: offer?.discount ?? 0,
+        }
+    }))
+}
+
 export async function createProduct(data: FormFields) {
 
     const user = await getCurrentUser()

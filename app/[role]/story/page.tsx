@@ -1,5 +1,7 @@
 import { getCurrentUser } from "@/lib/auth"
+import { getAdminStories } from "@/services/story/story.service"
 import StoryForm from "./StoryForm"
+import StoryAdminList from "./StoryAdminList"
 
 export default async function StoryPage() {
     const currentUser = await getCurrentUser()
@@ -15,15 +17,20 @@ export default async function StoryPage() {
         )
     }
 
+    const stories = await getAdminStories()
+
     return (
         <main dir="rtl" className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 md:px-8 lg:px-12">
-            <div className="mx-auto max-w-2xl">
+            <div className="mx-auto max-w-6xl">
                 <div className="mb-8">
                    
-                    <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">ساخت استوری</h1>
-                    <p className="mt-2 text-sm text-slate-500">استوری پس از ۲۴ ساعت به‌صورت خودکار از سایت حذف می‌شود.</p>
+                    <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">مدیریت استوری</h1>
+                    <p className="mt-2 text-sm text-slate-500">ساخت و مدیریت استوری‌های سایت از این بخش انجام می‌شود.</p>
                 </div>
-                <StoryForm />
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
+                    <StoryForm />
+                    <StoryAdminList stories={stories} />
+                </div>
             </div>
         </main>
     )

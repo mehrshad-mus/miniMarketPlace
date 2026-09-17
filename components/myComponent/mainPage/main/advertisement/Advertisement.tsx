@@ -1,306 +1,42 @@
 "use client"
 
 import Image from "next/image"
-import { motion } from "motion/react"
+import { motion, useScroll, useSpring, useTransform } from "motion/react"
+import { useRef } from "react"
 
 export default function Advertisement() {
-  
+    const heroRef = useRef<HTMLElement>(null)
+    const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end end"] })
+    const smoothProgress = useSpring(scrollYProgress, { damping: 24, stiffness: 120, mass: 0.3 })
+    const laptopScale = useTransform(smoothProgress, [0, 0.52, 1], [0.78, 1.08, 1.55])
+    const laptopRotate = useTransform(smoothProgress, [0, 0.55, 1], [-8, 5, 20])
+    const laptopX = useTransform(smoothProgress, [0, 0.55, 1], ["0vw", "-5vw", "-42vw"])
+    const laptopY = useTransform(smoothProgress, [0, 0.55, 1], ["4vh", "-3vh", "-18vh"])
+    const laptopOpacity = useTransform(smoothProgress, [0.72, 1], [1, 0])
+    const copyOpacity = useTransform(smoothProgress, [0, 0.32, 0.72], [1, 1, 0])
+    const copyY = useTransform(smoothProgress, [0, 0.72], [0, -70])
+    const glowScale = useTransform(smoothProgress, [0, 1], [0.8, 1.7])
+    const glowOpacity = useTransform(smoothProgress, [0, 0.65, 1], [0.35, 0.75, 0])
 
     return (
-        <section className="w-full px-4 bg-white dark:bg-gray-900" dir="ltr">
-            {/* Advertisement */}
-            <div
-                className="
-                    mx-auto
-                    flex
-                    w-full
-                    max-w-7xl
-                    overflow-hidden                              
-                "
-            >
-                {/* IMAGE */}
-                <motion.div
-                    initial={{
-                        opacity: 0,
-                        x: -120,
-                    }}
-                    whileInView={{
-                        opacity: 1,
-                        x: 0,
-                    }}
-                    viewport={{ amount: 0.3 }}
-                    transition={{
-                        duration: 0.8,
-                        ease: "easeOut",
-                    }}
-                    className="
-                        
-                        w-1/2
-                        overflow-hidden
-                        flex justify-center items-center
-                    "
-                >
-                    <Image
-                        src="/ChatGPT Image Aug 28, 2026, 09_54_58 PM.png"
-                        alt="Advertisement"
-                        width={100}
-                        height={100}
-                        className="
-                            h-120
-                            min-h-50
-                            w-90
-                            object-cover
-                            rounded-2xl
-                        "
-                    />
-                </motion.div>
-
-                {/* INFORMATION */}
-                <motion.div
-                    initial={{
-                        opacity: 0,
-                        x: 120,
-                    }}
-                    whileInView={{
-                        opacity: 1,
-                        x: 0,
-                    }}
-                    viewport={{  amount: 0.3 }}
-                    transition={{
-                        duration: 0.8,
-                        delay: 0.1,
-                        ease: "easeOut",
-                    }}
-                    dir="rtl"
-                    className="
-                        flex
-                        w-1/2
-                        flex-col
-                        justify-center
-                        p-6 px-8
-                    "
-                >
-                    {/* Badge */}
-                    <span
-                        className="
-                            mb-5
-                            w-fit
-                            rounded-full
-                            border
-                            border-rose-200
-                            bg-rose-50
-                            dark:bg-gray-700
-                            dark:text-gray-200
-                            dark:border-gray-300
-                            px-4
-                            py-2
-                            text-xs
-                            font-medium
-                            text-rose-600
-                        "
-                    >
-                        نسل جدید سرعت و عملکرد
-                    </span>
-
-                    {/* Title */}
-                    <h2
-                        className="
-                            max-w-lg
-                            text-4xl
-                            font-black
-                            leading-[1.4]
-                            text-neutral-900
-                            dark:text-gray-200
-                        "
-                    >
-                        قدرت بی‌نهایت
-                        <br />
-                        <span className="text-rose-600">
-                            در دستان تو
-                        </span>
-                    </h2>
-
-                    {/* Description */}
-                    <p
-                        className="
-                            mt-4
-                            max-w-md
-                            text-sm
-                            leading-7
-                            text-neutral-500
-                        "
-                    >
-                        تجربه‌ای سریع‌تر، قدرتمندتر و متفاوت با
-                        نسل جدید گوشی‌های هوشمند.
-                    </p>
-
-                    {/* Price */}
-                    <div className="mt-7 flex items-center gap-5">
-                        {/* Discount */}
-                        <div
-                            className="
-                                flex
-                                h-24
-                                w-24
-                                flex-col
-                                items-center
-                                justify-center
-                                rounded-2xl
-                                bg-red-600
-                                text-white
-                                shadow-[1px_1px_10px_#dc2626]
-                                shadow-rose-200
-                            "
-                        >
-                            <span className="text-xs">
-                                تخفیف
-                            </span>
-
-                            <span className="text-3xl font-black">
-                                ۳۰٪
-                            </span>
-                        </div>
-
-                        {/* Prices */}
-                        <div>
-                            <span className="block text-xs text-neutral-400">
-                                قیمت قبل
-                            </span>
-
-                            <span
-                                className="
-                                    text-sm
-                                    text-neutral-400
-                                    line-through
-                                "
-                            >
-                                ۲۸,۵۰۰,۰۰۰ تومان
-                            </span>
-
-                            <span className="mt-1 block text-xs text-neutral-500">
-                                قیمت بعد از تخفیف
-                            </span>
-
-                            <div className="mt-1 flex items-baseline gap-2">
-                                <span className="text-3xl font-black text-neutral-900 dark:text-gray-200">
-                                    ۱۹,۹۰۰,۰۰۰
-                                </span>
-
-                                <span className="text-xs text-neutral-500">
-                                    تومان
-                                </span>
-                            </div>
-                        </div>
+        <section ref={heroRef} className="relative h-[185svh] bg-white w-full dark:bg-gray-900" dir="rtl">
+            <div className="sticky top-0 flex min-h-svh items-center overflow-hidden bg-[radial-gradient(circle_at_68%_42%,rgba(225,29,72,0.16),transparent_34%),linear-gradient(135deg,#fff7f8_0%,#ffffff_48%,#fff1f2_100%)] px-4 dark:bg-[radial-gradient(circle_at_68%_42%,rgba(225,29,72,0.25),transparent_34%),linear-gradient(135deg,#09090b_0%,#17111a_55%,#240b14_100%)] sm:px-8 lg:px-12">
+                <motion.div style={{ scale: glowScale, opacity: glowOpacity }} className="pointer-events-none absolute left-[42%] top-[26%] size-128 rounded-full bg-rose-500/20 blur-3xl" />
+                <div className="relative mx-auto grid w-full max-w-7xl items-center gap-4 md:grid-cols-2 md:gap-8">
+                    <motion.div style={{ opacity: copyOpacity, y: copyY }} className="relative z-10 order-2 max-w-xl text-right md:order-1">
+                        <span className="inline-flex rounded-full border border-rose-200 bg-white/70 px-4 py-2 text-xs font-bold text-rose-600 shadow-sm backdrop-blur dark:border-rose-900/70 dark:bg-white/5 dark:text-rose-300">عملکردی فراتر از انتظار</span>
+                        <h2 className="mt-6 text-4xl font-black leading-[1.35] text-slate-950 dark:text-white sm:text-5xl lg:text-6xl">قدرت را<br /><span className="text-rose-600 dark:text-rose-400">از زاویه‌ای تازه</span> ببین</h2>
+                        <p className="mt-6 max-w-md text-sm leading-8 text-slate-600 dark:text-slate-300 sm:text-base">با اسکرول کردن، جزئیات نسل جدید لپ‌تاپ را کشف کنید؛ سرعت، نمایشگر خیره‌کننده و طراحی آماده‌ی هر ایده.</p>
+                        <div className="mt-8 flex items-center justify-start gap-3"><span className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white dark:bg-white dark:text-slate-950">برای کشف ادامه دهید</span><span className="text-xs font-medium text-slate-500 dark:text-slate-400">↓ اسکرول کنید</span></div>
+                    </motion.div>
+                    <div className="relative order-1 flex min-h-[44svh] items-center justify-center md:order-2 md:min-h-[72svh]">
+                        <motion.div style={{ scale: laptopScale, rotate: laptopRotate, x: laptopX, y: laptopY, opacity: laptopOpacity }} className="relative w-[min(125vw,50rem)] will-change-transform">
+                            <Image src="/images/laptop-hero.png" alt="لپ‌تاپ حرفه‌ای با نمایشگر رنگی" width={3500} height={2000} priority sizes="(max-width: 768px) 125vw, 50rem" className="h-auto w-full select-none object-contain drop-shadow-[0_32px_32px_rgba(15,23,42,0.3)] dark:drop-shadow-[0_32px_42px_rgba(244,63,94,0.25)]" />
+                        </motion.div>
                     </div>
-
-                    {/* Features */}
-                    <div className="mt-8 grid grid-cols-4 gap-3">
-                        <Feature
-                            title="Snapdragon"
-                            value="7s Gen 2"
-                        />
-
-                        <Feature
-                            title="باتری"
-                            value="5100mAh"
-                        />
-
-                        <Feature
-                            title="دوربین"
-                            value="200MP"
-                        />
-
-                        <Feature
-                            title="نمایشگر"
-                            value="120Hz"
-                        />
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="mt-8 flex gap-3">
-                        <button
-                            className="
-                                group
-                                flex
-                                flex-1
-                                items-center
-                                justify-center
-                                gap-3
-                                rounded-2xl
-                                bg-neutral-900
-                                px-6
-                                py-4
-                                text-sm
-                                font-semibold
-                                text-white
-                                dark:bg-gray-700
-                                transition-all
-                                duration-300
-                                hover:bg-rose-600
-                                dark:hover:shadow-[0px_0px_20px_#fff]
-                                hover:shadow-[0px_0px_20px_#dc2626]
-                                cursor-pointer
-                            "
-                        >
-                            مشاهده و خرید
-
-                            <span className="transition-transform duration-300 group-hover:-translate-x-1">
-                                ←
-                            </span>
-                        </button>
-
-                        <button
-                            className="
-                                rounded-2xl
-                                border
-                                border-neutral-200
-                                px-6
-                                py-4
-                                text-sm
-                                font-medium
-                                text-neutral-700
-                                transition-all
-                                duration-300
-                                hover:border-neutral-300
-                                hover:bg-neutral-50
-                                cursor-pointer
-                            "
-                        >
-                            اطلاعات بیشتر
-                        </button>
-                    </div>
-                </motion.div>
+                </div>
+                <motion.p style={{ opacity: copyOpacity }} className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center text-xs font-semibold tracking-[0.28em] text-slate-400 dark:text-slate-500">SCROLL TO EXPLORE</motion.p>
             </div>
         </section>
-    )
-}
-
-function Feature({
-    title,
-    value,
-}: {
-    title: string
-    value: string
-}) {
-    return (
-        <div
-            className="
-                rounded-xl
-                border
-                border-neutral-100
-                bg-neutral-50
-                dark:bg-gray-600
-                p-3
-                text-center
-            "
-        >
-            <span className="block text-[10px] dark:text-xs text-neutral-400 dark:text-neutral-800 font-bold">
-                {title}
-            </span>
-
-            <span className="mt-1 block text-xs font-bold text-neutral-800 dark:text-white">
-                {value}
-            </span>
-        </div>
     )
 }

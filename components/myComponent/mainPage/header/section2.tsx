@@ -1,10 +1,11 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { User } from '@/app/generated/prisma/client'
 import { CartGetPayload } from '@/app/generated/prisma/models'
 import { usePathname } from 'next/navigation'
+import { product } from '@/lib/queries'
 
 type cartForCartItemCount = CartGetPayload<{
     include: {
@@ -38,8 +39,67 @@ const Section2 = ({ user, cartItemCount }: {
 
     const [loginHover, setLoginHover] = useState(false)
 
+    const [searchValue, setSearchValue] = useState("")
+    const [searchResults, setSearchResults] = useState<Awaited<ReturnType<typeof product.search>>>([])
+    const [isSearching, setIsSearching] = useState(false)
+    const searchRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setSearchPanel(false)
+            }
+        }
+
+        document.addEventListener("mousedown", handleOutsideClick)
+        return () => document.removeEventListener("mousedown", handleOutsideClick)
+    }, [])
+
+    useEffect(() => {
+        const query = searchValue.trim()
+
+        if (query.length < 2) {
+            setSearchResults([])
+            setIsSearching(false)
+            return
+        }
+
+        const controller = new AbortController()
+        const timeoutId = window.setTimeout(async () => {
+            setIsSearching(true)
+
+            try {
+                const results = await fetch(`/api/product?search=${encodeURIComponent(query)}`, {
+                    signal: controller.signal,
+                    cache: "no-store",
+                })
+
+                if (!results.ok) {
+                    throw new Error("جست‌وجو انجام نشد")
+                }
+
+                const data = await results.json() as { products: Awaited<ReturnType<typeof product.search>> }
+                setSearchResults(data.products)
+            } catch (error) {
+                if (!(error instanceof DOMException && error.name === "AbortError")) {
+                    console.error(error)
+                    setSearchResults([])
+                }
+            } finally {
+                if (!controller.signal.aborted) {
+                    setIsSearching(false)
+                }
+            }
+        }, 300)
+
+        return () => {
+            window.clearTimeout(timeoutId)
+            controller.abort()
+        }
+    }, [searchValue])
+
     return (
-        <div dir='rtl' className="flex items-center justify-between gap-4 border-b border-slate-100/80 bg-white/95 px-4 py-2.5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-gray-950/95 sm:px-8 lg:px-12">
+        <div dir='rtl' className="flex items-center justify-between gap-4 bg-white px-4 py-2.5 backdrop-blur-xl dark:bg-gray-900 sm:px-8 lg:px-12">
 
             <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-8 lg:gap-12">
                 <div className="shrink-0">
@@ -47,14 +107,19 @@ const Section2 = ({ user, cartItemCount }: {
                     <Image src={"/paras_shop_logo_darktheme_v5.png"} alt="shop logo" className='hidden h-auto w-16 dark:block sm:w-20' width={100} height={100} />
                 </div>
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 cursor-pointer">
                     <div dir="rtl" className="relative flex h-11 w-full max-w-3xl items-center justify-between rounded-2xl border border-slate-200 bg-slate-100/80 px-1.5 transition focus-within:border-red-300 focus-within:bg-white focus-within:shadow-lg focus-within:shadow-red-100 dark:border-slate-700 dark:bg-slate-800/80 dark:focus-within:border-red-700 dark:focus-within:bg-slate-800 dark:focus-within:shadow-red-950/30">
                         <input
                             type="text"
                             placeholder=" جستجو سراسری... "
-                            className="h-full min-w-0 flex-1 bg-transparent px-3 text-right text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
+                            value={searchValue}
+                            maxLength={80}
+                            className="h-full cursor-pointer min-w-0 flex-1 bg-transparent px-3 text-right text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
                             onFocus={() => setSearchPanel(true)}
-                            onBlur={() => setSearchPanel(false)}
+                            onChange={(event) => {
+                                setSearchValue(event.target.value)
+                                setSearchPanel(true)
+                            }}
                         />
                         <span className="rounded-xl bg-white p-2.5 text-slate-500 shadow-sm dark:bg-slate-700 dark:text-slate-100">
                             <svg
@@ -69,90 +134,43 @@ const Section2 = ({ user, cartItemCount }: {
                         </span>
 
                         {searchPanel && (
-                            <div className={`absolute right-0 top-14 z-30 w-full max-w-3xl rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800`}>
-                                <div className="flex gap-2 items-center jucbtify-center">
-                                    <span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-eye" viewBox="0 0 16 16">
-                                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                                        </svg>
-                                    </span>
-                                    <p className="text-[14px]">محصولات پربازدید هفته</p>
-                                </div>
-                                <div className="flex justify-start gap-5 overflow-x-auto items-center pb-4 border-b">
-                                    {/* <div className="mt-5 cursor-pointer">
-                                            <div className="flex justify-center items-center gap-2 w-50  bg-white rounded-2xl p-1 ">
-                                                <Image src={"/ChatGPT Image Aug 5, 2026, 12_55_03 PM.png"} height={70} width={70} alt="photo" />
-                                                <div className="flex justify-center items-center flex-col w-2/3">
-                                                    <p className="text-[15px] w-full  truncate">محصول سمپل برای امتحان</p>
-                                                    <div className="flex justify-center items-center gap-1">
-                                                        <span className="text-[14px]">120000</span>
-                                                        <span className="text-xs text-gray-500">تومان</span>
-                                                    </div>
+                            <div ref={searchRef} className="absolute right-0 top-14 z-50 w-full max-w-3xl rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-2xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800">
+                                {searchValue.trim().length < 2 ? (
+                                    <p className="px-3 py-5 text-center text-sm text-slate-500 dark:text-slate-300">برای جست‌وجو حداقل دو حرف وارد کنید</p>
+                                ) : isSearching ? (
+                                    <p className="px-3 py-5 text-center text-sm text-slate-500 dark:text-slate-300">در حال جست‌وجو...</p>
+                                ) : searchResults.length === 0 ? (
+                                    <p className="px-3 py-5 text-center text-sm text-slate-500 dark:text-slate-300">محصولی پیدا نشد</p>
+                                ) : (
+                                    <div className="max-h-96 space-y-2 overflow-y-auto">
+                                        {searchResults.map((result) => (
+                                            <Link
+                                                key={result.id}
+                                                href={`/product/${result.id}`}
+                                                onClick={() => setSearchPanel(false)}
+                                                className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-slate-100 dark:hover:bg-slate-700"
+                                            >
+                                                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
+                                                    {result.imageUrl ? (
+                                                        <Image src={result.imageUrl} alt={result.imageAlt} width={48} height={48} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <div className="flex h-full items-center justify-center text-[10px] text-slate-400">بدون تصویر</div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        </div> */}
-                                    <div className="mt-5 cursor-pointer">
-                                        <div className="flex justify-center items-center gap-2 w-50 dark:bg-gray-500 bg-white rounded-2xl p-1 ">
-                                            <Image src={"/ChatGPT Image Aug 5, 2026, 12_55_03 PM.png"} height={70} width={70} alt="photo" />
-                                            <div className="flex justify-center items-center flex-col w-2/3">
-                                                <p className="text-[15px] w-full  truncate">محصول سمپل برای امتحان</p>
-                                                <div className="flex justify-center items-center gap-1">
-                                                    <span className="text-[14px]">120000</span>
-                                                    <span className="text-xs text-gray-500 dark:text-white">تومان</span>
+                                                <div className="min-w-0 flex-1 text-right">
+                                                    <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{result.title}</p>
+                                                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{result.brandName}</p>
                                                 </div>
-                                            </div>
-                                        </div>
+                                                {result.price !== null && (
+                                                    <span className="shrink-0 text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                        {(result.price - Math.round(result.price * result.discount / 100)).toLocaleString("fa-IR")} تومان
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        ))}
                                     </div>
-                                    <div className="mt-5 cursor-pointer">
-                                        <div className="flex justify-center items-center gap-2 w-50 dark:bg-gray-500 bg-white rounded-2xl p-1 ">
-                                            <Image src={"/ChatGPT Image Aug 5, 2026, 12_55_03 PM.png"} height={70} width={70} alt="photo" />
-                                            <div className="flex justify-center items-center flex-col w-2/3">
-                                                <p className="text-[15px] w-full  truncate">محصول سمپل برای امتحان</p>
-                                                <div className="flex justify-center items-center gap-1">
-                                                    <span className="text-[14px]">120000</span>
-                                                    <span className="text-xs text-gray-500 dark:text-white">تومان</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-5 cursor-pointer">
-                                        <div className="flex justify-center items-center gap-2 w-50 dark:bg-gray-500 bg-white rounded-2xl p-1 ">
-                                            <Image src={"/ChatGPT Image Aug 5, 2026, 12_55_03 PM.png"} height={70} width={70} alt="photo" />
-                                            <div className="flex justify-center items-center flex-col w-2/3">
-                                                <p className="text-[15px] w-full  truncate">محصول سمپل برای امتحان</p>
-                                                <div className="flex justify-center items-center gap-1">
-                                                    <span className="text-[14px]">120000</span>
-                                                    <span className="text-xs text-gray-500 dark:text-white">تومان</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2 items-center jucbtify-center mt-10">
-                                    <span className="text-yellow-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-fire" viewBox="0 0 16 16">
-                                            <path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15" />
-                                        </svg>
-                                    </span>
-                                    <p className="text-[14px]">
-                                        بیشترین جست و جو ها
-                                    </p>
-                                </div>
-
-
-                                <div className="flex justify-start items-center gap-3 mt-4">
-                                    <Link href={"/"} className="bg-white px-3 py-2 dark:text-gray-500 rounded-2xl hover:bg-gray-200">موبایل</Link>
-                                    <Link href={"/"} className="bg-white px-3 py-2 dark:text-gray-500 rounded-2xl hover:bg-gray-200">یخچال</Link>
-                                    <Link href={"/"} className="bg-white px-3 py-2 dark:text-gray-500 rounded-2xl hover:bg-gray-200">لپ تاپ</Link>
-                                    <Link href={"/"} className="bg-white px-3 py-2 dark:text-gray-500 rounded-2xl hover:bg-gray-200">هدفون</Link>
-                                    <Link href={"/"} className="bg-white px-3 py-2 dark:text-gray-500 rounded-2xl hover:bg-gray-200">کیف</Link>
-
-                                </div>
-
+                                )}
                             </div>
-
                         )}
 
                     </div>

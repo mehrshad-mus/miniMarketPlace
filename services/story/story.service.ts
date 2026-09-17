@@ -1,38 +1,10 @@
+import { FILE_EXTENSIONS, STORY_LIFETIME_MS, validateStoryFile } from "@/lib/file/validation"
 import { prisma } from "@/lib/prisma"
 import { s3 } from "@/lib/s3Client"
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { randomUUID } from "crypto"
 
-const STORY_LIFETIME_MS = 24 * 60 * 60 * 1000
-const IMAGE_MAX_SIZE = 10 * 1024 * 1024
-const VIDEO_MAX_SIZE = 50 * 1024 * 1024
-const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"])
-const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"])
-const FILE_EXTENSIONS: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "video/mp4": "mp4",
-    "video/webm": "webm",
-    "video/quicktime": "mov",
-}
-
-export function validateStoryFile(file: File) {
-    const isImage = IMAGE_TYPES.has(file.type)
-    const isVideo = VIDEO_TYPES.has(file.type)
-
-    if (!isImage && !isVideo) {
-        throw new Error("فرمت فایل مجاز نیست")
-    }
-
-    const maxSize = isImage ? IMAGE_MAX_SIZE : VIDEO_MAX_SIZE
-    if (file.size > maxSize) {
-        throw new Error(isImage ? "حجم عکس نباید بیشتر از ۱۰ مگابایت باشد" : "حجم ویدیو نباید بیشتر از ۵۰ مگابایت باشد")
-    }
-
-    return { isImage, isVideo }
-}
 
 function getStoryExpiryDate() {
     return new Date(Date.now() - STORY_LIFETIME_MS)
@@ -112,6 +84,36 @@ export async function getActiveStories(userId?: string) {
     })))
 }
 
+export async function getAdminStories() {
+    const stories = await prisma.story.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+            id: true,
+            title: true,
+            content: true,
+            imageUrl: true,
+            videoUrl: true,
+            createdAt: true,
+        },
+    })
+
+    return Promise.all(stories.map(async (story) => ({
+        id: story.id,
+        title: story.title,
+        content: story.content,
+        createdAt: story.createdAt,
+        mediaType: story.videoUrl ? "video" as const : "image" as const,
+        mediaUrl: await getSignedUrl(
+            s3,
+            new GetObjectCommand({
+                Bucket: process.env.S3_BUCKET_NAME!,
+                Key: story.videoUrl || story.imageUrl!,
+            }),
+            { expiresIn: 3600 },
+        ),
+    })))
+}
+
 export async function markStoryViewed({storyId, userId}: {
     storyId: string
     userId: string
@@ -133,4 +135,25 @@ export async function markStoryViewed({storyId, userId}: {
         create: { storyId, userId },
         update: { viewedAt: new Date() },
     })
+}
+
+export async function deleteStory({ storyId }: { storyId: string }) {
+    const story = await prisma.story.findUnique({
+        where: { id: storyId },
+        select: { imageUrl: true, videoUrl: true },
+    })
+
+    if (!story) {
+        throw new Error("استوری پیدا نشد")
+    }
+
+    await prisma.story.delete({ where: { id: storyId } })
+
+    const key = story.videoUrl || story.imageUrl
+    if (key) {
+        await s3.send(new DeleteObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME!,
+            Key: key,
+        }))
+    }
 }

@@ -44,7 +44,7 @@ export default async function MainLayout({
 
                 <Section2 user={user} cartItemCount={cartItemCount} />
 
-                <Nav />
+                <Nav userRole={user?.role ?? null} />
             </header>
             {children}
             <Toaster />
