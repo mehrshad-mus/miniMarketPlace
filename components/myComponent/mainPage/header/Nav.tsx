@@ -1,6 +1,9 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
+import { category } from '@/lib/queries'
+import { LoaderCircle } from 'lucide-react'
 
 const Nav = ({ userRole }: { userRole?: string | null }) => {
 
@@ -8,6 +11,16 @@ const Nav = ({ userRole }: { userRole?: string | null }) => {
     const [categoryList, setCategoryList] = useState(false)
     const [sellerDialog, setSellerDialog] = useState<"login" | "already" | null>(null)
     const router = useRouter()
+    const {
+        data: categories = [],
+        isLoading: isCategoriesLoading,
+        isError: isCategoriesError,
+    } = useQuery({
+        queryKey: ["categories"],
+        queryFn: category.getAllCategory,
+        staleTime: 5 * 60 * 1000,
+        retry: 2,
+    })
 
     useEffect(() => {
         let lastScroll = 0
@@ -43,6 +56,13 @@ const Nav = ({ userRole }: { userRole?: string | null }) => {
         router.push(`/${userRole.toLowerCase()}/shops/shopRequest`)
     }
 
+    const handleContactClick = () => {
+        document.getElementById("contact-footer")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        })
+    }
+
     return (
         <>
             <nav dir="rtl" className={`
@@ -65,13 +85,32 @@ const Nav = ({ userRole }: { userRole?: string | null }) => {
                         <div
                             onMouseEnter={() => setCategoryList(true)}
                             onMouseLeave={() => setCategoryList(false)}
-                            className="absolute top-44 right-10 w-50 bg-stone-200 dark:bg-gray-600 shodow rounded-xl shadow-lg py-4 px-2">
-                            <ul className="flex justify-center items-start flex-col gap-1">
-                                <li className="hover:text-white w-full rounded-2xl p-1 pr-2 hover:bg-red-600 cursor-pointer">موبایل</li>
-                                <li className="hover:text-white w-full rounded-2xl p-1 pr-2 hover:bg-red-600 cursor-pointer">لپ تاپ</li>
-                                <li className="hover:text-white w-full rounded-2xl p-1 pr-2 hover:bg-red-600 cursor-pointer">هدفون</li>
-                                <li className="hover:text-white w-full rounded-2xl p-1 pr-2 hover:bg-red-600 cursor-pointer">کیف</li>
-                                <li className="hover:text-white w-full rounded-2xl p-1 pr-2 hover:bg-red-600 cursor-pointer">یخچال</li>
+                            className="absolute right-10 top-44 z-30 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-gray-800">
+                            <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto">
+                                {isCategoriesLoading && (
+                                    <li className="flex items-center justify-center gap-2 px-3 py-4 text-sm text-slate-500 dark:text-slate-300">
+                                        <LoaderCircle className="size-4 animate-spin" />
+                                        در حال بارگذاری
+                                    </li>
+                                )}
+                                {isCategoriesError && (
+                                    <li className="px-3 py-4 text-center text-sm text-red-600 dark:text-red-400">
+                                        بارگذاری دسته‌بندی‌ها انجام نشد
+                                    </li>
+                                )}
+                                {!isCategoriesLoading && !isCategoriesError && categories.length === 0 && (
+                                    <li className="px-3 py-4 text-center text-sm text-slate-500 dark:text-slate-300">
+                                        دسته‌بندی‌ای ثبت نشده است
+                                    </li>
+                                )}
+                                {!isCategoriesLoading && !isCategoriesError && categories.map((item) => (
+                                    <li
+                                        key={item.id}
+                                        className="w-full cursor-pointer rounded-xl px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-200 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                                    >
+                                        {item.name}
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     }
@@ -85,7 +124,15 @@ const Nav = ({ userRole }: { userRole?: string | null }) => {
                                 فروشنده شوید
                             </button>
                         </li>
-                        <li className="dark:hover:text-red-600 dark:text-gray-300 hover:text-red-600">تماس با ما</li>
+                        <li>
+                            <button
+                                type="button"
+                                onClick={handleContactClick}
+                                className="dark:hover:text-red-600 dark:text-gray-300 hover:text-red-600"
+                            >
+                                تماس با ما
+                            </button>
+                        </li>
                     </ul>
                 </div>
 

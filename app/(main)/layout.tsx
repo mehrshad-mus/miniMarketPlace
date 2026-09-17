@@ -4,6 +4,7 @@ import HeaderAdvertisement from "@/components/myComponent/mainPage/header/Header
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Toaster } from "sonner";
+import LandingFooter from "@/components/myComponent/mainPage/footer/LandingFooter";
 
 export default async function MainLayout({
     children,
@@ -47,6 +48,7 @@ export default async function MainLayout({
                 <Nav userRole={user?.role ?? null} />
             </header>
             {children}
+            <LandingFooter />
             <Toaster />
         </>
     )
