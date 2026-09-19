@@ -47,21 +47,6 @@ export async function createCategory(value: string, icon: File) {
 
     console.log(processedSvg)
 
-    // const fileName = `${randomUUID()}.svg`
-    // const uploadDir = path.join(
-    //     process.cwd(),
-    //     "public",
-    //     "uploads",
-    //     "categories"
-    // )
-    // await mkdir(uploadDir, { recursive: true })
-    // await writeFile(
-    //     path.join(uploadDir, fileName),
-    //     processedSvg,
-    //     "utf8"
-    // )
-    // const iconUrl = `/uploads/categories/${fileName}`
-
     const fileName = `categories/${randomUUID()}.svg`
 
     const blob = await put(

@@ -1,6 +1,6 @@
 import { SellerRequest, User } from "@/app/generated/prisma/client";
 import { errorHandler } from "./utils";
-import { dialogProps, categoryType, FormFields, OfferField, ProfileFields, StoreRequestFields } from "./zodSchema/schema";
+import { dialogProps, categoryType, FormFields, OfferField, ProfileFields, StoreRequestFields, ProductAdFormFields, ProductAdUpdateFormFields } from "./zodSchema/schema";
 import { cartType, offerType, productRequestType, productWithBrandAndCategory, ReviewData } from "./types/types";
 import { getSellerProductRequestCount, getSellerRequestCount } from "@/lib/actions/getCounts";
 import { changeAdminStatuSellerRequest } from "./actions/AdminStatusSellerRequest";
@@ -1046,6 +1046,61 @@ export const favorite = {
         return message;
     }
 }
+
+export const advertisement = {
+    get: async () => {
+        const res = await fetch("/api/advertisement");
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message);
+        return result.advertisement;
+    },
+    create: async (data: ProductAdFormFields) => {
+        const formData = new FormData();
+        console.log(data)
+        formData.append("payload", JSON.stringify({
+            title: data.title,
+            description: data.description,
+            features: data.features.map(({ label, values }) => ({ label, values })),
+        }));
+
+        data.features.forEach((feature) => {
+            formData.append("featureImages", feature.image);
+        });
+
+        const res = await fetch("/api/advertisement", {
+            method: "POST",
+            body: formData,
+        });
+
+        const result = await res.json() as { message: string };
+        if (!res.ok) {
+            throw new Error(result.message);
+        }
+
+        return result;
+    },
+    update: async (data: ProductAdUpdateFormFields) => {
+        const formData = new FormData();
+        formData.append("payload", JSON.stringify({
+            title: data.title,
+            description: data.description,
+            features: data.features.map(({ id, label, values, imageUrl }) => ({ id, label, values, imageUrl })),
+        }));
+        data.features.forEach((feature) => {
+            formData.append("featureImages", feature.image || new File([], ""));
+        });
+        const res = await fetch("/api/advertisement", { method: "PATCH", body: formData });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message);
+        return result;
+    },
+    remove: async () => {
+        const res = await fetch("/api/advertisement", { method: "DELETE" });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message);
+        return result;
+    },
+};
 
 export const story = {
     create: async ({ title, content, file,}: {

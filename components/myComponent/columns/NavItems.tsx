@@ -1,4 +1,4 @@
-import { User } from '@/app/generated/prisma/client';
+﻿import { User } from '@/app/generated/prisma/client';
 import { navTextColor } from '@/lib/utils';
 import React from 'react'
 import ErrorIndicator from '../ErrorIndicator';
@@ -296,6 +296,27 @@ export const NavItems = ({ data }: { data: User | undefined }) => {
                     name: "سطل زباله",
                     permission: ["admin"],
                     url: "",
+                },
+            ]
+        },
+        {
+            name: "محصول تبلیغاتی",
+            permission: ["admin"],
+            url: "/admin/advertisement/create",
+            icon: (isPathNameIncludeURL: boolean) => {
+                return (
+                    <span className={`${isPathNameIncludeURL && navTextColor({ user: data })}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-badge-ad-fill" viewBox="0 0 16 16">
+                            <path d="M11.35 8.337c0-1.8-1.041-2.683-2.657-2.683-.5 0-.95.138-1.325.42-.337.267-.5.68-.5 1.195 0 .806.414 1.31 1.094 1.592.743.315 1.89.421 2.626.56v.272c0 .577-.258.96-.949.96-.596 0-.943-.312-.943-.99h-1.13c0 1.194.943 2.003 2.382 2.003 1.439 0 2.4-.592 2.4-2.108zm-2.39 4.277c-.623 0-1.18-.033-1.674-.11v-1.3c.53.076 1.07.116 1.6.116.658 0 1.02-.29 1.02-.797 0-.296-.116-.515-.35-.674-.232-.158-.613-.264-1.186-.377l-.483-.107c-.513-.114-.91-.309-1.192-.579-.28-.27-.42-.641-.42-1.117 0-.772.408-1.403 1.038-1.78.633-.38 1.521-.571 2.694-.571.832 0 1.593.082 2.285.248v1.267c-.617-.165-1.241-.248-1.887-.248-.557 0-.95.158-1.165.466-.215.308-.323.704-.323 1.19 0 .744.227 1.086.743 1.328.519.245 1.273.373 2.255.463l.423.06c.52.075.925.262 1.216.562.29.302.435.704.435 1.207 0 .878-.552 1.573-1.496 1.973-.845.352-1.853.528-3.046.528Zm-1.602-9.073h-1.6v-.856h1.6V3.167h1.135v.86H8.637V5.5H7.503V4.64h-.515v.86h-.515v1.134h.515v.86h.515v-.86h1.135v.86H8.637v-.86h1.135V5.5H8.637v-.86h.516v-.856h1.135v.856ZM.5 8a.5.5 0 0 1 .5-.5h3.5a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5m0 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5M1 3.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5" />
+                        </svg>
+                    </span>
+                )
+            },
+            sidebarSubItems: [
+                {
+                    name: "ایجاد محصول تبلیغاتی",
+                    permission: ["admin"],
+                    url: "/admin/advertisement/create",
                 },
             ]
         },

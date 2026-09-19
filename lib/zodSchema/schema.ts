@@ -118,6 +118,47 @@ export const schema = z.object({
 
 export type FormFields = z.infer<typeof schema>;
 
+const productAdImageSchema = z.custom<File>(
+    (value) => typeof File !== "undefined" && value instanceof File,
+    "تصویر ویژگی الزامی است"
+).refine(
+    (file) => file.size <= MAX_FILE_SIZE,
+    "حجم تصویر نباید بیشتر از ۵ مگابایت باشد"
+).refine(
+    (file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type),
+    "فرمت تصویر باید jpg، png یا webp باشد"
+);
+
+export const productAdSchema = z.object({
+    title: z.string().trim().min(1, "عنوان تبلیغ الزامی است").max(120, "عنوان تبلیغ بیش از حد طولانی است"),
+    description: z.string().trim().max(1000, "توضیحات تبلیغ بیش از حد طولانی است"),
+    features: z.array(z.object({
+        label: z.string().trim().min(1, "نام ویژگی الزامی است").max(100, "نام ویژگی بیش از حد طولانی است"),
+        values: z.array(
+            z.string().trim().min(1, "مقدار ویژگی نمی‌تواند خالی باشد").max(200, "مقدار ویژگی بیش از حد طولانی است")
+        ).min(1, "هر ویژگی باید حداقل یک مقدار داشته باشد"),
+        image: productAdImageSchema,
+    })).length(5, "برای ثبت محصول تبلیغاتی باید دقیقاً ۵ ویژگی اضافه کنید"),
+});
+
+export type ProductAdFormFields = z.infer<typeof productAdSchema>;
+
+export const productAdUpdateSchema = z.object({
+    title: z.string().trim().min(1, "عنوان تبلیغ الزامی است").max(120, "عنوان تبلیغ بیش از حد طولانی است"),
+    description: z.string().trim().max(1000, "توضیحات تبلیغ بیش از حد طولانی است"),
+    features: z.array(z.object({
+        id: z.string().optional(),
+        label: z.string().trim().min(1, "نام ویژگی الزامی است").max(100, "نام ویژگی بیش از حد طولانی است"),
+        values: z.array(
+            z.string().trim().min(1, "مقدار ویژگی نمی‌تواند خالی باشد").max(200, "مقدار ویژگی بیش از حد طولانی است")
+        ).min(1, "هر ویژگی باید حداقل یک مقدار داشته باشد"),
+        image: productAdImageSchema.nullable(),
+        imageUrl: z.string().url().optional(),
+    })).length(5, "برای ثبت محصول تبلیغاتی باید دقیقاً ۵ ویژگی اضافه کنید"),
+});
+
+export type ProductAdUpdateFormFields = z.infer<typeof productAdUpdateSchema>;
+
 //Offer Schema
 const variantSchemaForOffer = z.object({
     id: z.string(),
