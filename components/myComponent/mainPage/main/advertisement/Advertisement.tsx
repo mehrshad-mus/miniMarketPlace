@@ -19,7 +19,7 @@ export default function Advertisement() {
     const glowOpacity = useTransform(smoothProgress, [0, 0.65, 1], [0.35, 0.75, 0])
 
     return (
-        <section ref={heroRef} className="relative h-[185svh] bg-white w-full dark:bg-gray-900" dir="rtl">
+        <section ref={heroRef} className="relative  bg-white w-full dark:bg-gray-900" dir="rtl">
             <div className="sticky top-0 flex min-h-svh items-center overflow-hidden bg-[radial-gradient(circle_at_68%_42%,rgba(225,29,72,0.16),transparent_34%),linear-gradient(135deg,#fff7f8_0%,#ffffff_48%,#fff1f2_100%)] px-4 dark:bg-[radial-gradient(circle_at_68%_42%,rgba(225,29,72,0.25),transparent_34%),linear-gradient(135deg,#09090b_0%,#17111a_55%,#240b14_100%)] sm:px-8 lg:px-12">
                 <motion.div style={{ scale: glowScale, opacity: glowOpacity }} className="pointer-events-none absolute left-[42%] top-[26%] size-128 rounded-full bg-rose-500/20 blur-3xl" />
                 <div className="relative mx-auto grid w-full max-w-7xl items-center gap-4 md:grid-cols-2 md:gap-8">

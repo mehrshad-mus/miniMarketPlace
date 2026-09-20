@@ -135,6 +135,7 @@ export async function getPublicAdvertisement() {
 }
 
 export async function updateAdvertisement(data: UpdateAdvertisementInput) {
+    console.log("update runs")
     assertAdmin(await getCurrentUser());
 
     if (data.features.length !== 5) {

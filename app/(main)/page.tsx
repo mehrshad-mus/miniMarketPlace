@@ -30,11 +30,6 @@ export default async function Home() {
                 <Category/>     
                 <AdvertisementSection />
             </>
-
-            <div className="h-300">
-
-            </div>
-
         </div>
     )
 }
