@@ -1047,12 +1047,31 @@ export const favorite = {
     }
 }
 
+export type PublicAdvertisementValue = {
+    id: string;
+    value: string;
+};
+
+export type PublicAdvertisementFeature = {
+    id: string;
+    label: string;
+    imageUrl: string;
+    values: PublicAdvertisementValue[];
+};
+
+export type PublicAdvertisement = {
+    id: string;
+    title: string | null;
+    description: string | null;
+    features: PublicAdvertisementFeature[];
+};
+
 export const advertisement = {
-    get: async () => {
+    get: async (): Promise<PublicAdvertisement | null> => {
         const res = await fetch("/api/advertisement");
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.message);
-        return result.advertisement;
+        const result = await res.json() as { advertisement?: PublicAdvertisement | null; message?: string };
+        if (!res.ok) throw new Error(result.message || "دریافت تبلیغ با خطا مواجه شد");
+        return result.advertisement ?? null;
     },
     create: async (data: ProductAdFormFields) => {
         const formData = new FormData();

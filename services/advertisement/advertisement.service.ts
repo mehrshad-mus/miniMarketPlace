@@ -110,6 +110,30 @@ export async function getAdvertisement() {
     });
 }
 
+export async function getPublicAdvertisement() {
+    return prisma.productAd.findFirst({
+        select: {
+            id: true,
+            title: true,
+            description: true,
+            features: {
+                select: {
+                    id: true,
+                    label: true,
+                    imageUrl: true,
+                    values: {
+                        select: {
+                            id: true,
+                            value: true,
+                        },
+                    },
+                },
+                orderBy: { sortOrder: "asc" },
+            },
+        },
+    });
+}
+
 export async function updateAdvertisement(data: UpdateAdvertisementInput) {
     assertAdmin(await getCurrentUser());
 

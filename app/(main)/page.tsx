@@ -1,6 +1,7 @@
 import AutoSlider from "@/components/myComponent/mainPage/main/autoSliders/AutoSlider";
 import Advertisement from "@/components/myComponent/mainPage/main/advertisement/Advertisement";
 import Category from "@/components/myComponent/mainPage/main/CategorySection/Category";
+import AdvertisementSection from "@/components/myComponent/mainPage/main/CategorySection/AdvertisementSection";
 import StoryStrip from "@/components/myComponent/mainPage/main/Story/StoryStrip";
 import { getCurrentUser } from "@/lib/auth";
 import { getActiveStories } from "@/services/story/story.service";
@@ -27,6 +28,7 @@ export default async function Home() {
 
             <>    
                 <Category/>     
+                <AdvertisementSection />
             </>
 
             <div className="h-300">

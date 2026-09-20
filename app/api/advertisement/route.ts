@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { productAdSchema, productAdUpdateSchema } from "@/lib/zodSchema/schema";
-import { createAdvertisement, deleteAdvertisement, getAdvertisement, updateAdvertisement } from "@/services/advertisement/advertisement.service";
+import { createAdvertisement, deleteAdvertisement, getPublicAdvertisement, updateAdvertisement } from "@/services/advertisement/advertisement.service";
 
 function errorResponse(error: unknown) {
     const message = error instanceof Error ? error.message : "خطای داخلی سرور";
@@ -10,7 +10,7 @@ function errorResponse(error: unknown) {
 
 export async function GET() {
     try {
-        return NextResponse.json({ advertisement: await getAdvertisement() });
+        return NextResponse.json({ advertisement: await getPublicAdvertisement() });
     } catch (error) {
         console.error(error);
         return errorResponse(error);
