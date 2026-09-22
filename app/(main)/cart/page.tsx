@@ -1,9 +1,7 @@
 import React from 'react'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { s3 } from '@/lib/s3Client'
-import { GetObjectCommand } from '@aws-sdk/client-s3'
+import { getProductImageUrl } from '@/services/product/product.service'
 import CartItem from '@/components/myComponent/orderSpecificComponent/CartItem'
 import CartCheckList from '@/components/myComponent/orderSpecificComponent/CartCheckList'
 import MyMap from '@/components/myComponent/MyMap'
@@ -79,14 +77,7 @@ const Page = async () => {
                                 productImage: await Promise.all(
                                     item.offer.productVariant.product.productImage.map(async (img) => ({
                                         ...img,
-                                        url: await getSignedUrl(
-                                            s3,
-                                            new GetObjectCommand({
-                                                Bucket: process.env.S3_BUCKET_NAME!,
-                                                Key: img.url,
-                                            }),
-                                            { expiresIn: 3600 }
-                                        ),
+                                        url: await getProductImageUrl(img.url),
                                     }))
                                 ),
                             }

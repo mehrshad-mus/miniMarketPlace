@@ -8,16 +8,6 @@ import useEmblaCarousel from "embla-carousel-react"
 import { EmblaOptionsType } from 'embla-carousel'
 import AutoScroll from "embla-carousel-auto-scroll"
 
-type PropType = {
-    slides: number[]
-    options?: EmblaOptionsType
-}
-
-type AutoSliderType = {
-    qKey: string[],
-    qFunNumber: number
-}
-
 const AutoSlider = () => {
 
     const { data, isLoading } = useQuery({

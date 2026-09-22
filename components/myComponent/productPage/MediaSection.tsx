@@ -5,18 +5,15 @@ import { FieldErrors, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import Image from "next/image";
 import { ProductRequestImage } from '@/app/generated/prisma/client';
 
-async function urlToFile(url: string) {
-    const response = await fetch(`/uploads/${url}`);
+async function urlToFile(url: string, fileName: string) {
+    const response = await fetch(url);
 
-    if(!response.ok) {
-        throw new Error(`Failed to fetch file from URL: ${url}`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch product request image: ${response.status}`);
     }
-    const blob = await response.blob();
 
-    
-    return new File([blob], url, {
-        type: blob.type,
-    });
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: blob.type });
 }
 
 const MediaSection = (
@@ -36,7 +33,38 @@ const MediaSection = (
 
     const [video, setVideo] = useState<string>()
 
-    const [fileImagePath , setFileImagePath] = useState(false);
+    useEffect(() => {
+        if (!defaulImages?.length) {
+            return;
+        }
+
+        const defaultImages = defaulImages;
+        let cancelled = false;
+
+        async function loadDefaultImages() {
+            try {
+                const imageFiles = await Promise.all(
+                    defaultImages.map((image, index) =>
+                        urlToFile(image.url, `product-request-image-${index + 1}`)
+                    )
+                );
+
+                if (!cancelled) {
+                    setValue("images", imageFiles, { shouldValidate: true });
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    console.error("Failed to load product request images", error);
+                }
+            }
+        }
+
+        loadDefaultImages();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [defaulImages, setValue]);
 
     function imgHandler(e: React.ChangeEvent<HTMLInputElement>) {
 
@@ -47,7 +75,6 @@ const MediaSection = (
             URL.createObjectURL(file)
         );
 
-        setFileImagePath(true)
         setImages(urls)
     }
 
@@ -100,7 +127,7 @@ const MediaSection = (
 
                     {images?.map((img) => {
                         return (
-                            <Image key={img} src={!fileImagePath ? `/uploads/${img}` : img} className="w-60 h-60 object-cover rounded-lg border mt-5" width={240} height={240} alt="this is a photo"></Image>
+                            <Image key={img} src={img} className="w-60 h-60 object-cover rounded-lg border mt-5" width={240} height={240} alt="this is a photo"></Image>
                         )
                     })}
                     

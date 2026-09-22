@@ -2,9 +2,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { accessRole } from "@/lib/constant/enums";
 import { prisma } from "@/lib/prisma";
 import { OfferField } from "@/lib/zodSchema/schema";
-import { s3 } from "@/lib/s3Client";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getProductImageUrl } from "@/services/product/product.service";
 
 export async function getAllOffer({ sellerId, productId, currentPage }:
     {
@@ -103,14 +101,7 @@ export async function getAllOffer({ sellerId, productId, currentPage }:
                         product.productImage.map(async (image) => {
                             return {
                                 ...image,
-                                url: await getSignedUrl(
-                                    s3,
-                                    new GetObjectCommand({
-                                        Bucket: process.env.S3_BUCKET_NAME!,
-                                        Key: image.url,
-                                    }),
-                                    { expiresIn: 3600 } // 1 hour
-                                ),
+                                url: await getProductImageUrl(image.url),
                             }
                         })
                     )
@@ -204,14 +195,7 @@ export async function getAllOffer({ sellerId, productId, currentPage }:
                     product.productImage.map(async (image) => {
                         return {
                             ...image,
-                            url: await getSignedUrl(
-                                s3,
-                                new GetObjectCommand({
-                                    Bucket: process.env.S3_BUCKET_NAME!,
-                                    Key: image.url,
-                                }),
-                                { expiresIn: 3600 } // 1 hour
-                            ),
+                            url: await getProductImageUrl(image.url),
                         }
                     })
                 )

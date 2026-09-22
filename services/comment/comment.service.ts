@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { s3 } from "@/lib/s3Client";
 import { ReviewData } from "@/lib/types/types";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getProductImageUrl } from "@/services/product/product.service";
 
 export async function createComment({commentData , productId, userId} : {commentData : ReviewData , productId : string | undefined, userId : string}) {
    
@@ -80,16 +78,7 @@ export async function getCommentsByUserId(userId: string) {
                 const productImages = await Promise.all(
                     com.product.productImage.map(async (img) => ({
                         ...img,
-                        url: await getSignedUrl(
-                            s3,
-                            new GetObjectCommand({
-                                Bucket: process.env.S3_BUCKET_NAME!,
-                                Key: img.url,
-                            }),
-                            {
-                                expiresIn: 3600,
-                            }
-                        ),
+                        url: await getProductImageUrl(img.url),
                     }))
                 );
     

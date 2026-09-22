@@ -1,13 +1,70 @@
 import { ProductGetPayload } from "@/app/generated/prisma/internal/prismaNamespaceBrowser"
 import { getCurrentUser } from "@/lib/auth"
 import { accessRole } from "@/lib/constant/enums"
+import { IMAGE_MAX_SIZE, IMAGE_TYPES } from "@/lib/file/validation"
 import { prisma } from "@/lib/prisma"
 import { s3 } from "@/lib/s3Client"
 import { generateVariantsForAPI } from "@/lib/utils"
 import { FormFields } from "@/lib/zodSchema/schema"
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
+import { del, put } from "@vercel/blob"
+import { DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { randomUUID } from "crypto"
+
+function validateProductImage(file: File) {
+    if (!IMAGE_TYPES.has(file.type)) {
+        throw new Error("فرمت تصویر باید jpg، png یا webp باشد")
+    }
+
+    if (file.size > IMAGE_MAX_SIZE) {
+        throw new Error("حجم تصویر نباید بیشتر از ۱۰ مگابایت باشد")
+    }
+}
+
+function validateProductImages(images: File[]) {
+    if (images.length < 1 || images.length > 6) {
+        throw new Error("تعداد تصاویر باید بین ۱ تا ۶ تصویر باشد")
+    }
+
+    images.forEach(validateProductImage)
+}
+
+export async function getProductImageUrl(value: string) {
+    try {
+        const url = new URL(value)
+        if (url.protocol === "https:" && url.hostname.endsWith(".public.blob.vercel-storage.com")) {
+            return value
+        }
+    } catch {
+        // Legacy product images are stored as S3 object keys.
+    }
+
+    return getSignedUrl(
+        s3,
+        new GetObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME!,
+            Key: value,
+        }),
+        { expiresIn: 3600 }
+    )
+}
+
+async function deleteProductImage(value: string) {
+    try {
+        const url = new URL(value)
+        if (url.protocol === "https:" && url.hostname.endsWith(".public.blob.vercel-storage.com")) {
+            await del(value)
+            return
+        }
+    } catch {
+        // Legacy product images are stored as S3 object keys.
+    }
+
+    await s3.send(new DeleteObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: value,
+    }))
+}
 
 export async function getAllProduct({ currentPage, productId, offers }: { currentPage: string | null, productId: string | null, offers?: string | null }) {
     const user = await getCurrentUser()
@@ -60,14 +117,7 @@ export async function getAllProduct({ currentPage, productId, offers }: { curren
             productImage: await Promise.all(
                 productById.productImage.map(async (img) => ({
                     ...img,
-                    url: await getSignedUrl(
-                        s3,
-                        new GetObjectCommand({
-                            Bucket: process.env.S3_BUCKET_NAME!,
-                            Key: img.url,
-                        }),
-                        { expiresIn: 3600 }
-                    ),
+                    url: await getProductImageUrl(img.url),
                 }))
             ),
         }]
@@ -117,14 +167,7 @@ export async function getAllProduct({ currentPage, productId, offers }: { curren
                         product.productImage.map(async (image) => {
                             return {
                                 ...image,
-                                url: await getSignedUrl(
-                                    s3,
-                                    new GetObjectCommand({
-                                        Bucket: process.env.S3_BUCKET_NAME!,
-                                        Key: image.url,
-                                    }),
-                                    { expiresIn: 3600 } // 1 hour
-                                ),
+                                url: await getProductImageUrl(image.url),
                             }
                         })
                     )
@@ -166,14 +209,7 @@ export async function getAllProduct({ currentPage, productId, offers }: { curren
                     product.productImage.map(async (image) => {
                         return {
                             ...image,
-                            url: await getSignedUrl(
-                                s3,
-                                new GetObjectCommand({
-                                    Bucket: process.env.S3_BUCKET_NAME!,
-                                    Key: image.url,
-                                }),
-                                { expiresIn: 3600 } // 1 hour
-                            ),
+                            url: await getProductImageUrl(image.url),
                         }
                     })
                 )
@@ -238,14 +274,7 @@ export async function getProductByIdForUser({ productId }: { productId: string }
         productImage: await Promise.all(
             productById.productImage.map(async (img) => ({
                 ...img,
-                url: await getSignedUrl(
-                    s3,
-                    new GetObjectCommand({
-                        Bucket: process.env.S3_BUCKET_NAME!,
-                        Key: img.url,
-                    }),
-                    { expiresIn: 3600 }
-                ),
+                url: await getProductImageUrl(img.url),
             }))
         ),
     }
@@ -307,14 +336,7 @@ export async function searchProductsForUser(query: string) {
             title: product.title,
             brandName: product.brand.name,
             imageUrl: image
-                ? await getSignedUrl(
-                    s3,
-                    new GetObjectCommand({
-                        Bucket: process.env.S3_BUCKET_NAME!,
-                        Key: image.url,
-                    }),
-                    { expiresIn: 900 },
-                )
+                ? await getProductImageUrl(image.url)
                 : null,
             imageAlt: image?.altText || product.title,
             price: offer?.price ?? null,
@@ -330,6 +352,8 @@ export async function createProduct(data: FormFields) {
     if (!user || user.userRole !== accessRole) {
         throw new Error("you havnt access!")
     }
+
+    validateProductImages(data.images)
 
     const { brand,
         category,
@@ -477,38 +501,29 @@ export async function createProduct(data: FormFields) {
         }
     }
 
-    //related to save imgage in cloude (tigris DB)
-    const imgUrl: string[] = []
-    for (const img of data.images) {
+    const uploadedUrls: string[] = []
+    try {
+        const imageUrls = await Promise.all(data.images.map(async (image) => {
+            validateProductImage(image)
+            const blob = await put(
+                `products/${newProduct.id}/${randomUUID()}`,
+                image,
+                { access: "public", contentType: image.type }
+            )
+            uploadedUrls.push(blob.url)
+            return blob.url
+        }))
 
-        const buffer = Buffer.from(
-            await img.arrayBuffer()
-        );
-
-        const key = `products/${randomUUID()}-${img.name}`;
-
-        await s3.send(
-            new PutObjectCommand({
-                Bucket: process.env.S3_BUCKET_NAME!,
-                Key: key,
-                Body: buffer,
-                ContentType: img.type,
-                ContentLength: img.size
-            }));
-
-
-        imgUrl.push(key)
-
-    }
-
-    for (const img of imgUrl) {
-        await prisma.productImage.create({
-            data: {
-                url: img,
+        await prisma.productImage.createMany({
+            data: imageUrls.map((url) => ({
+                url,
                 productId: newProduct.id,
                 altText: "this is an image"
-            }
+            }))
         })
+    } catch (error) {
+        await Promise.allSettled(uploadedUrls.map((url) => del(url)))
+        throw error
     }
 
     return { newProduct }
@@ -521,6 +536,8 @@ export async function updateProduct(data: FormFields) {
     if (!user || user.userRole !== accessRole) {
         throw new Error("you havnt access!")
     }
+
+    validateProductImages(data.images)
 
     const { brand,
         category,
@@ -694,48 +711,34 @@ export async function updateProduct(data: FormFields) {
         }
     }
 
-    for (const image of existingProductByID.productImage) {
-        await s3.send(
-            new DeleteObjectCommand({
-                Bucket: process.env.S3_BUCKET_NAME!,
-                Key: image.url
-            })
-        );
-    }
-    //for less trouble
-    await prisma.productImage.deleteMany({ where: { productId: updateProduct.id } })
+    const uploadedUrls: string[] = []
+    try {
+        const imageUrls = await Promise.all(data.images.map(async (image) => {
+            validateProductImage(image)
+            const blob = await put(
+                `products/${updateProduct.id}/${randomUUID()}`,
+                image,
+                { access: "public", contentType: image.type }
+            )
+            uploadedUrls.push(blob.url)
+            return blob.url
+        }))
 
-    const imgUrl: string[] = []
-    for (const img of data.images) {
-
-        const buffer = Buffer.from(
-            await img.arrayBuffer()
-        );
-
-        const key = `products/${randomUUID()}-${img.name}`;
-
-        await s3.send(
-            new PutObjectCommand({
-                Bucket: process.env.S3_BUCKET_NAME!,
-                Key: key,
-                Body: buffer,
-                ContentType: img.type,
-                ContentLength: img.size
-            }));
-
-
-        imgUrl.push(key)
-
-    }
-
-    for (const img of imgUrl) {
-        await prisma.productImage.create({
-            data: {
-                url: img,
+        await prisma.productImage.deleteMany({ where: { productId: updateProduct.id } })
+        await prisma.productImage.createMany({
+            data: imageUrls.map((url) => ({
+                url,
                 productId: updateProduct.id,
                 altText: "this is an image"
-            }
+            }))
         })
+
+        await Promise.allSettled(
+            existingProductByID.productImage.map((image) => deleteProductImage(image.url))
+        )
+    } catch (error) {
+        await Promise.allSettled(uploadedUrls.map((url) => del(url)))
+        throw error
     }
 
     return { updateProduct }
@@ -748,9 +751,22 @@ export async function deleteProduct({ id }: { id: string }) {
         throw new Error("you havnt access!")
     }
 
+    const existingProduct = await prisma.product.findUnique({
+        where: { id },
+        select: { productImage: { select: { url: true } } },
+    })
+
+    if (!existingProduct) {
+        throw new Error("محصول وجود ندارد")
+    }
+
     const deleteProduct = await prisma.product.delete({
         where: { id }
     })
+
+    await Promise.allSettled(
+        existingProduct.productImage.map((image) => deleteProductImage(image.url))
+    )
 
     return deleteProduct
 

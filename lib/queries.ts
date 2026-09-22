@@ -125,7 +125,7 @@ export const seller = {
 
 export const userProfileData = async () => {
     const res = await fetch(`/api/user?userId=${"currentUser"}`)
-    await new Promise((resolve) => {setTimeout(resolve,2000)})
+    await new Promise((resolve) => { setTimeout(resolve, 2000) })
 
     const { currentUser, message }: { currentUser: User, message: string } = await res.json()
 
@@ -271,7 +271,8 @@ export const options = {
 export const category = {
 
     getAllCategory: async () => {
-        const res = await fetch("/api/product/category")
+        const res = await fetch("http://localhost:3000/api/product/category")
+        // const res = await fetch("/api/product/category")
 
         const data = await res.json() as { message: string, category: categoryType[] }
 
@@ -283,12 +284,12 @@ export const category = {
         return category
     },
 
-    createCategory: async ({ value , file }: dialogProps) => {
-        
+    createCategory: async ({ value, file }: dialogProps) => {
+
         const formData = new FormData()
-        formData.append("payload" , JSON.stringify({value}))
+        formData.append("payload", JSON.stringify({ value }))
         file?.map((fi) => {
-            formData.append("icon" , fi)    
+            formData.append("icon", fi)
         })
 
         const res = await fetch("/api/product/category", {
@@ -307,12 +308,12 @@ export const category = {
         return { message }
 
     },
-    editCategoryName: async ({ value, id ,file}: dialogProps) => {
+    editCategoryName: async ({ value, id, file }: dialogProps) => {
 
         const formData = new FormData()
-        formData.append("payload" , JSON.stringify({value , id}))
+        formData.append("payload", JSON.stringify({ value, id }))
         file?.map((fi) => {
-            formData.append("icon" , fi)    
+            formData.append("icon", fi)
         })
 
         const res = await fetch("/api/product/category", {
@@ -463,15 +464,17 @@ export const product = {
             throw new Error(message);
         }
 
-        const { products } = await res.json() as { products: {
-            id: string;
-            title: string;
-            brandName: string;
-            imageUrl: string | null;
-            imageAlt: string;
-            price: number | null;
-            discount: number;
-        }[] };
+        const { products } = await res.json() as {
+            products: {
+                id: string;
+                title: string;
+                brandName: string;
+                imageUrl: string | null;
+                imageAlt: string;
+                price: number | null;
+                discount: number;
+            }[]
+        };
 
         return products;
     },
@@ -896,13 +899,13 @@ export const cart = {
             offerId?: string,
             quantity?: number,
             cartItemId?: string,
-            location?: { latitude: number | null, longitude: number | null , formatted_address: string | null }
+            location?: { latitude: number | null, longitude: number | null, formatted_address: string | null }
         }) => {
 
         const res = await fetch("/api/cart", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ offerId, quantity, cartItemId, location})
+            body: JSON.stringify({ offerId, quantity, cartItemId, location })
         })
 
         if (!res.ok) {
@@ -954,10 +957,10 @@ export const address = {
 }
 
 export const payment = {
-    createPayment : async() => {
-        const res = await fetch("/api/payment/create" , {
+    createPayment: async () => {
+        const res = await fetch("/api/payment/create", {
             method: "PUT",
-            headers : {"Content-Type" : "application/json"},
+            headers: { "Content-Type": "application/json" },
         })
     }
 }
@@ -975,20 +978,20 @@ export const comment = {
         return comments
     },
 
-    createComment : async({commentData , productId} : {commentData : ReviewData, productId: string | undefined}) => {
+    createComment: async ({ commentData, productId }: { commentData: ReviewData, productId: string | undefined }) => {
 
-        const res = await fetch("/api/comment" , {
+        const res = await fetch("/api/comment", {
             method: "PUT",
-            headers : {"Content-Type" : "application/json"},
-            body : JSON.stringify({commentData, productId})
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ commentData, productId })
         })
 
-        if(!res.ok){
-            const {message} = await res.json()
+        if (!res.ok) {
+            const { message } = await res.json()
             throw new Error(message)
         }
 
-        const {message} = await res.json()
+        const { message } = await res.json()
         return message
     },
 
@@ -1018,19 +1021,19 @@ export const favorite = {
         return favorites;
     },
 
-    addTofavorite : async({productId} : {productId : string | undefined}) => {
-        const res = await fetch("/api/favorite" , {
-            method : "PUT",
-            headers : {"Content-Type" : "application/json"},
-            body : JSON.stringify({productId})
+    addTofavorite: async ({ productId }: { productId: string | undefined }) => {
+        const res = await fetch("/api/favorite", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId })
         })
 
-        if(!res.ok){
-            const {message} = await res.json()
+        if (!res.ok) {
+            const { message } = await res.json()
             throw new Error(message)
         }
 
-        const {message} = await res.json()
+        const { message } = await res.json()
         return message
     },
 
@@ -1122,7 +1125,7 @@ export const advertisement = {
 };
 
 export const story = {
-    create: async ({ title, content, file,}: {
+    create: async ({ title, content, file, }: {
         title: string
         content: string
         file: File
@@ -1159,7 +1162,7 @@ export const story = {
 
         return res.json()
     },
-    
+
     markViewed: async (storyId: string) => {
         const res = await fetch("/api/story/view", {
             method: "POST",
@@ -1197,7 +1200,7 @@ export const extraQueryis = {
         return products
     },
 
-    userLogout : async() => {
+    userLogout: async () => {
         const message = await userLogoutAction()
         return message
     }

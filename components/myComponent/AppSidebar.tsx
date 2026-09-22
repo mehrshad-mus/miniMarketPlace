@@ -27,11 +27,8 @@ import { User } from "@/app/generated/prisma/client"
 
 export default function AppSidebar({ data }: { data: User }) {
 
-
     const { sidebarItems } = NavItems({ data }) as { sidebarItems: SidebarItems[] }
-
     const pathName = usePathname()
-
 
     useEffect(() => {
         const root = document.documentElement;

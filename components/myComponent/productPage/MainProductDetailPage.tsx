@@ -34,8 +34,6 @@ const MainProductDetailPage = (
     const currentBrand = watch("brand")
     const currentCategory = watch("category")
     
-    const defaultInputContext = useContext(DefaultInputContext);
-
     return (
         <div className={`justify-center items-center flex-col w-4/5 py-3 px-5 gap-6 ${detailPage === DetailPageProps.IMPORTANT_DETAIL ? " flex" : ` hidden`}`} >
 

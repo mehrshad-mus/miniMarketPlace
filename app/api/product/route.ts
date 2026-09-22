@@ -36,9 +36,7 @@ export async function GET(request: NextRequest) {
         console.error(error)
         return NextResponse.json(
             {
-                message:
-                    error instanceof Error ?
-                        error.message : "An unknown error occurred"
+                message: "خطای داخلی سرور"
             }, { status: 500 })
     }
 }
@@ -77,9 +75,7 @@ export async function POST(request: NextRequest) {
         console.error(error)
         return NextResponse.json(
             {
-                message:
-                    error instanceof Error ?
-                        error.message : "An unknown error occurred"
+                message: "خطای داخلی سرور"
             }, { status: 500 })
     }
 }
@@ -117,7 +113,7 @@ export async function PATCH(request: NextRequest) {
     } catch (error) {
         console.log(error)
         return NextResponse.json({
-            message: error instanceof Error ? error.message : "An unknown error occurred"
+            message: "خطای داخلی سرور"
         }, { status: 500 })
     }
 }
@@ -139,7 +135,7 @@ export async function DELETE(request: NextRequest) {
     } catch (error) {
         console.log(error)
         return NextResponse.json({
-            message: error instanceof Error ? error.message : "An unknown error occurred"
+            message: "خطای داخلی سرور"
         }, { status: 500 })
     }
 

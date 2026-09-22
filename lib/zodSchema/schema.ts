@@ -1,4 +1,5 @@
-import z, { file } from "zod";
+import z from "zod";
+import { IMAGE_TYPES } from "@/lib/file/validation";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
@@ -104,6 +105,7 @@ export const schema = z.object({
     images: z
         .array(z.instanceof(File))
         .refine(files => files.every(file => file.size <= MAX_FILE_SIZE), "حجم هر تصویر نباید بیشتر از 5 مگابایت باشد")
+        .refine(files => files.every(file => IMAGE_TYPES.has(file.type)), "فرمت تصویر باید jpg، png یا webp باشد")
         .min(1, "حداقل یک تصویر وارد کنید")
         .max(6, "حداکثر 6 تصویر مجاز است"),
 

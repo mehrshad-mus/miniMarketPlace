@@ -1,8 +1,54 @@
 import { getCurrentUser } from "@/lib/auth"
+import { IMAGE_MAX_SIZE, IMAGE_TYPES } from "@/lib/file/validation"
 import { prisma } from "@/lib/prisma"
 import { FormFields } from "@/lib/zodSchema/schema"
-import { unlink, writeFile } from "fs/promises"
+import { del, put } from "@vercel/blob"
+import { unlink } from "fs/promises"
 import { join } from "path"
+import { randomUUID } from "crypto"
+
+function validateProductRequestImages(images: File[]) {
+    if (images.length < 1 || images.length > 6) {
+        throw new Error("تعداد تصاویر باید بین ۱ تا ۶ تصویر باشد")
+    }
+
+    for (const image of images) {
+        if (!IMAGE_TYPES.has(image.type)) {
+            throw new Error("فرمت تصویر باید jpg، png یا webp باشد")
+        }
+
+        if (image.size > IMAGE_MAX_SIZE) {
+            throw new Error("حجم تصویر نباید بیشتر از ۱۰ مگابایت باشد")
+        }
+    }
+}
+
+function getProductRequestImageUrl(value: string) {
+    try {
+        const url = new URL(value)
+        if (url.protocol === "https:" && url.hostname.endsWith(".public.blob.vercel-storage.com")) {
+            return value
+        }
+    } catch {
+        // Legacy product request images are stored in public/uploads.
+    }
+
+    return `/uploads/${value}`
+}
+
+async function deleteProductRequestImage(value: string) {
+    try {
+        const url = new URL(value)
+        if (url.protocol === "https:" && url.hostname.endsWith(".public.blob.vercel-storage.com")) {
+            await del(value)
+            return
+        }
+    } catch {
+        // Legacy product request images are stored in public/uploads.
+    }
+
+    await unlink(join(process.cwd(), "public", "uploads", value))
+}
 
 export async function getAllProductRequest({ productRequestId }: { productRequestId: string | null }) {
 
@@ -37,7 +83,16 @@ export async function getAllProductRequest({ productRequestId }: { productReques
             }
         })
 
-        return { productRequests: [updateRequest], totalCount: 1 }
+        return {
+            productRequests: [{
+                ...updateRequest,
+                images: updateRequest.images.map((image) => ({
+                    ...image,
+                    url: getProductRequestImageUrl(image.url),
+                })),
+            }],
+            totalCount: 1,
+        }
     }
 
     const allRequest = await prisma.productRequest.findMany({
@@ -54,7 +109,16 @@ export async function getAllProductRequest({ productRequestId }: { productReques
 
     const count = await prisma.productRequest.count()
 
-    return { productRequests: allRequest, totalCount: Math.ceil(count / 5) }
+    return {
+        productRequests: allRequest.map((request) => ({
+            ...request,
+            images: request.images.map((image) => ({
+                ...image,
+                url: getProductRequestImageUrl(image.url),
+            })),
+        })),
+        totalCount: Math.ceil(count / 5),
+    }
 }
 
 export async function createProductRequest({ data, images }: { data: FormFields, images: File[] }) {
@@ -74,7 +138,6 @@ export async function createProductRequest({ data, images }: { data: FormFields,
         specialProduct,
         warningAndDetail,
         englishTitle,
-        id,
         seoExplanation,
         seoTitle,
         seoWord,
@@ -86,6 +149,8 @@ export async function createProductRequest({ data, images }: { data: FormFields,
     if (!seller) {
         throw new Error("seller dosent exist")
     }
+
+    validateProductRequestImages(images)
 
     const newProductRequest = await prisma.productRequest.create({
         data: {
@@ -106,26 +171,31 @@ export async function createProductRequest({ data, images }: { data: FormFields,
         }
     })
 
-    for (const img of images) {
-        const bytes = await img.arrayBuffer()
+    const uploadedUrls: string[] = []
+    try {
+        const imageUrls = await Promise.all(images.map(async (image) => {
+            const blob = await put(
+                `product-requests/${newProductRequest.id}/${randomUUID()}`,
+                image,
+                { access: "public", contentType: image.type }
+            )
+            uploadedUrls.push(blob.url)
+            return blob.url
+        }))
 
-        const buffer = Buffer.from(bytes)
-
-        const fileName = `${Date.now()}-${img.name}`;
-
-        const newProductRequestImage = await prisma.productRequestImage.create({
-            data: {
-                url: fileName,
-                productRequestId: newProductRequest.id
-            }
+        await prisma.productRequestImage.createMany({
+            data: imageUrls.map((url) => ({
+                url,
+                productRequestId: newProductRequest.id,
+            })),
         })
-
-        await writeFile(
-            join(process.cwd(), "public/uploads", fileName),
-            buffer
-        )
+    } catch (error) {
+        await Promise.allSettled(uploadedUrls.map((url) => del(url)))
+        await prisma.productRequest.delete({ where: { id: newProductRequest.id } })
+        throw error
     }
 
+    return { productRequest: newProductRequest }
 }
 
 export async function deleteProductRequest({ productRequestId }: { productRequestId: string }) {
@@ -138,13 +208,11 @@ export async function deleteProductRequest({ productRequestId }: { productReques
 
     const productRequestImages = await prisma.productRequestImage.findMany({ where: { productRequestId } })
 
-    for (const img of productRequestImages) {
-        await unlink(
-            join(process.cwd(), "/public/uploads", img.url)
-        )
-    }
-
     const deletedProductRequest = await prisma.productRequest.delete({ where: { id: productRequestId } })
+
+    await Promise.allSettled(
+        productRequestImages.map((image) => deleteProductRequestImage(image.url))
+    )
 
     return {deletedProductRequest : deletedProductRequest.id}
 }

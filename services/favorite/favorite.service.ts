@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { s3 } from "@/lib/s3Client";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getProductImageUrl } from "@/services/product/product.service";
 
 export async function getFavoritesByUserId(userId: string) {
 
@@ -70,16 +68,7 @@ export async function getFavoritesByUserId(userId: string) {
             const productImages = await Promise.all(
                 favorite.product.productImage.map(async (img) => ({
                     ...img,
-                    url: await getSignedUrl(
-                        s3,
-                        new GetObjectCommand({
-                            Bucket: process.env.S3_BUCKET_NAME!,
-                            Key: img.url,
-                        }),
-                        {
-                            expiresIn: 3600,
-                        }
-                    ),
+                    url: await getProductImageUrl(img.url),
                 }))
             );
 
