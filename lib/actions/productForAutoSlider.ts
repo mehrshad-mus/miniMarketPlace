@@ -30,5 +30,6 @@ export const autoSliderProduct = async () => {
                 )
             }
         }))
+
     return productWithImage;
 }
