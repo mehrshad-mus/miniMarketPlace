@@ -19,8 +19,6 @@ export async function GET(request: NextRequest) {
         if (userId) {
             const user = await getCurrentUser()
 
-            console.log("useris" , user)
-
             if (!user) return NextResponse.json({ message: "user dosent exist...!" }, { status: 401 })
             const currentUser = await prisma.user.findUnique({ where: { id: user?.userId } })
 
