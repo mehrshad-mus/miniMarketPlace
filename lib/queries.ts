@@ -271,7 +271,7 @@ export const options = {
 export const category = {
 
     getAllCategory: async () => {
-        const res = await fetch("http://localhost:3000/api/product/category")
+        const res = await fetch("/api/product/category")
         // const res = await fetch("/api/product/category")
 
         const data = await res.json() as { message: string, category: categoryType[] }
