@@ -34,7 +34,7 @@ export type dialogProps = {
 export type categoryType = {
     id: string,
     name: string
-    iconUrl : string
+    iconUrl : string | null
 }
 
 //related to product
